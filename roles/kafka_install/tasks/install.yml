@@ -1,0 +1,96 @@
+---
+- name: Check local download archive path
+  ansible.builtin.stat:
+    path: "{{ lookup('env', 'PWD') }}"
+  register: __kafka_local_path
+  delegate_to: localhost
+
+- name: Set download paths
+  ansible.builtin.set_fact:
+    __kafka_remote_archive_path: "{{ kafka_install_workdir }}/{{ kafka_install_archive_file }}"
+    __kafka_local_archive_path: "{{ __kafka_local_path.stat.path }}/{{ kafka_install_archive_file }}"
+
+- name: Check local archive
+  ansible.builtin.stat:
+    path: "{{ __kafka_local_archive_path }}"
+  register: __kafka_local_archive
+  delegate_to: localhost
+
+- name: Download artifact
+  when:
+    - __kafka_local_archive.stat is defined
+    - not __kafka_local_archive.stat.exists
+  block:
+    - name: Download from rhn
+      ansible.builtin.include_tasks: install/rhn.yml
+      when:
+        - __kafka_amqstreams_enable is defined
+        - __kafka_amqstreams_enable
+        - __kafka_rhn_id is defined
+
+    - name: Download from web
+      ansible.builtin.include_tasks: install/web.yml
+      when:
+        - __kafka_rhn_id is not defined
+
+- name: Check remote archive
+  ansible.builtin.stat:
+    path: "{{ __kafka_remote_archive_path }}"
+  register: __kafka_remote_archive
+
+- name: Ensure workdir {{ kafka_install_workdir }} exists.
+  ansible.builtin.file:
+    path: "{{ kafka_install_workdir }}"
+    state: directory
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: 0750
+  become: true
+
+- name: Copy archive to target nodes
+  ansible.builtin.copy:
+    src: "{{ __kafka_local_archive_path }}"
+    dest: "{{ __kafka_remote_archive_path }}"
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: 0640
+  register: new_version_downloaded
+  when:
+    - __kafka_remote_archive.stat is defined
+    - not __kafka_remote_archive.stat.exists
+  become: true
+
+- name: Unarchive {{ __kafka_remote_archive_path }}
+  ansible.builtin.unarchive:
+    src: "{{ __kafka_remote_archive_path }}"
+    dest: "{{ kafka_install_workdir }}"
+    remote_src: true
+    creates: "{{ kafka_home }}"
+
+- name: Check kafka home
+  ansible.builtin.stat:
+    path: "{{ kafka_home }}"
+  register: __kafka_home
+
+- name: "Check state of kafka home directory: {{ kafka_home }}"
+  ansible.builtin.assert:
+    that:
+      - __kafka_home is defined
+      - __kafka_home.stat is defined
+      - __kafka_home.stat.exists is defined
+      - __kafka_home.stat.exists
+    quiet: true
+    fail_msg: "Kafka home directory has not been created: {{ kafka_home }}."
+
+- name: Return Kafka microversion
+  ansible.builtin.command: "{{ kafka_home }}/bin/kafka-topics.sh --version"
+  register: __kafka_microversion
+  changed_when: false
+
+- name: "Check kafka version is: {{ kafka_version }}"
+  ansible.builtin.assert:
+    that:
+      - __kafka_microversion is defined
+      - __kafka_microversion is defined
+    quiet: true
+    fail_msg: Kafka version is not as expected {{ __kafka_microversion }}.

@@ -1,0 +1,22 @@
+---
+- name: Check arguments
+  ansible.builtin.assert:
+    that:
+      - kafka_user is defined
+    quiet: true
+
+- name: Set kafka group
+  ansible.builtin.set_fact:
+    group_name: "{{ kafka_group | default(kafka_user) }}"
+
+- name: Ensure group {{ group_name }} exists.
+  become: true
+  ansible.builtin.group:
+    name: "{{ group_name }}"
+
+- name: Ensure user {{ kafka_user }} exists.
+  become: true
+  ansible.builtin.user:
+    name: "{{ kafka_user }}"
+    groups: "{{ group_name }}"
+    state: present

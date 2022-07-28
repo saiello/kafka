@@ -1,0 +1,9 @@
+---
+- name: Ensures prereqs are fullfilled
+  ansible.builtin.include_tasks: prereqs.yml
+
+- name: Ensures user exists
+  ansible.builtin.include_tasks: user.yml
+
+- name: Install Kafka
+  ansible.builtin.include_tasks: install.yml

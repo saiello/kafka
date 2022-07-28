@@ -1,0 +1,12 @@
+---
+- name: Set Java to be Installed
+  ansible.builtin.set_fact:
+    kafka_prereqs_packages: "{{ kafka_prereqs_packages | default([]) + [ kafka_prereqs_setup_openjdk_package_name ] }}"
+  when: kafka_prereqs_setup_openjdk
+
+- name: Install packages
+  ansible.builtin.package:
+    name: "{{ kafka_prereqs_packages }}"
+    state: present
+  become: true
+  when: kafka_prereqs_packages is defined

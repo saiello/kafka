@@ -1,0 +1,4 @@
+---
+- name: Show error
+  ansible.builtin.fail:
+    msg: Not implemented.

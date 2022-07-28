@@ -1,0 +1,14 @@
+---
+- name: Download Kafka from {{ kafka_install_download_url }}
+  ansible.builtin.get_url:
+    url: "{{ kafka_install_download_url }}"
+    dest: "{{ __kafka_local_archive_path }}"
+    url_username: "{{ kafka_install_url_username | default(omit) }}"
+    url_password: "{{ kafka_install_url_password | default(omit) }}"
+    user: root
+    group: root
+    mode: 0644
+  run_once: true
+  delegate_to: localhost
+  become: false
+  check_mode: false
