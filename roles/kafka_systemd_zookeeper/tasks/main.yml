@@ -1,0 +1,102 @@
+---
+- name: Check parameters
+  ansible.builtin.assert:
+    that:
+      - zookeeper_data_path is defined
+      - zookeeper_logs_dir is defined
+      - zookeeper_user is defined
+      - zookeeper_group is defined
+      - zookeeper_home is defined
+    quiet: true
+
+- name: Ensures user exists
+  ansible.builtin.include_role:
+    name: kafka_install
+    tasks_from: user.yml
+  vars:
+    kafka_user: "{{ zookeeper_user }}"
+    kafka_groups: "{{ zookeeper_group }}"
+
+# -----------------
+# Prepare folders
+# -----------------
+- name: Create Zookeeper {{ zookeeper_data_path }} folder
+  ansible.builtin.file:
+    path: "{{ zookeeper_data_path }}"
+    state: directory
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    mode: 0775
+
+- name: Create Zookeeper {{ zookeeper_logs_dir }} folder
+  ansible.builtin.file:
+    path: "{{ zookeeper_logs_dir }}"
+    state: directory
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    mode: 0775
+
+# ---------------------------
+# Collect JAVA_OPTS
+# ---------------------------
+- name: Initialize zookeeper_java_opts
+  ansible.builtin.set_fact:
+    zookeeper_java_opts: []
+# ---------------------------
+# Prepare Configuration files
+# ---------------------------
+- name: Add Zookeeper id file
+  ansible.builtin.copy:
+    content: "{{ zookeeper_myid }}"
+    dest: "{{ zookeeper_data_path }}/myid"
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    mode: 0775
+
+
+- name: Add Zookeeper config file
+  ansible.builtin.template:
+    src: zookeeper.properties.j2
+    dest: "{{ zookeeper_home }}/config/{{ zookeeper_service_name }}.properties"
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    mode: 0400
+    backup: "{{ zookeeper_template_backup }}"
+  notify: Restart zookeeper
+
+- name: Add Systemd service file
+  ansible.builtin.template:
+    src: zookeeper.service.j2
+    dest: /usr/lib/systemd/system/{{ zookeeper_service_name }}.service
+    owner: root
+    group: root
+    mode: 0644
+    backup: "{{ zookeeper_template_backup }}"
+  become: true
+  notify:
+    - Reload systemd
+    - Restart zookeeper
+
+- name: Add Zookeeper Environment file
+  ansible.builtin.template:
+    src: zookeeper.j2
+    dest: "{{ zookeeper_home }}/config/{{ zookeeper_service_name }}.environment"
+    backup: "{{ zookeeper_template_backup }}"
+    owner: "{{ zookeeper_user }}"
+    group: "{{ zookeeper_group }}"
+    mode: 0644
+  notify: Restart zookeeper
+
+# ---------------------------
+# Enable Zookeeper service
+# ---------------------------
+
+- name: Enable zookeeper
+  ansible.builtin.systemd:
+    name: "{{ zookeeper_service_name }}"
+    enabled: true
+  when: not ansible_check_mode
+
+
+- name: Run Handlers
+  ansible.builtin.meta: flush_handlers

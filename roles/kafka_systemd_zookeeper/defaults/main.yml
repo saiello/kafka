@@ -1,0 +1,20 @@
+---
+zookeeper_service_name: zookeeper
+zookeeper_data_path: /var/data/{{ zookeeper_service_name }}
+zookeeper_logs_dir: /var/log/{{ zookeeper_service_name }}
+
+zookeeper_home: "{{ kafka_home }}"
+zookeeper_user: kafka
+zookeeper_group: kafka
+
+zookeeper_template_backup: true
+
+zookeeper_max_heap: 512M
+zookeeper_min_heap: 512M
+
+zookeeper_port_offset: 0
+zookeeper_client_port: "{{ 2181 + (zookeeper_port_offset | int) }}"
+
+# zookeeper_quorum_use_ipv4: true
+# zookeeper_quorum_use_ipv4_interface: eth1
+# zookeeper_quorum_address: "{{ ansible_hostname }}"

@@ -1,0 +1,16 @@
+[Unit]
+Description=zookeeper
+After=syslog.target network.target
+
+
+[Service]
+Type=simple
+User={{ zookeeper_user }}
+Group={{ zookeeper_group }}
+EnvironmentFile=-{{ zookeeper_home }}/config/{{ zookeeper_service_name }}.environment
+ExecStart={{ zookeeper_home }}/bin/zookeeper-server-start.sh {{ zookeeper_home }}/config/{{ zookeeper_service_name }}.properties
+ExecStop={{ zookeeper_home }}/bin/zookeeper-server-stop.sh
+
+
+[Install]
+WantedBy=multi-user.target

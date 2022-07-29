@@ -1,0 +1,20 @@
+{{ ansible_managed }}
+
+dataDir={{ zookeeper_data_path }}
+clientPort={{ zookeeper_client_port }}
+
+tickTime=2000
+initLimit=10
+syncLimit=5
+maxClientCnxns=60
+autopurge.snapRetainCount=3
+autopurge.purgeInterval=24
+snapshot.trust.empty=true
+4lw.commands.whitelist=*
+
+{% if zookeeper_servers is defined %}
+{% for host, zk_attributes in zookeeper_servers.items() %}
+server.{{ zk_attributes.myid }}={{ zk_attributes.address }}:{{ zk_attributes.follower_port }}:{{ zk_attributes.election_port }}
+{% endfor %}
+{% endif %}
+

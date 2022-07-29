@@ -1,0 +1,5 @@
+---
+- name: Stop Zookeeper
+  ansible.builtin.service:
+    name: "{{ zookeeper_service_name }}"
+    state: stopped

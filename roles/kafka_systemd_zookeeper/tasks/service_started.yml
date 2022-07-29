@@ -1,0 +1,9 @@
+---
+- name: Start Zookeeper
+  ansible.builtin.service:
+    name: "{{ zookeeper_service_name }}"
+    state: started
+  notify: Verify Zookeeper is listening
+
+- name: Check Zookeeper Service
+  ansible.builtin.include_tasks: service_check.yml

@@ -1,0 +1,8 @@
+---
+- name: Restart zookeeper
+  ansible.builtin.service:
+    name: "{{ zookeeper_service_name }}"
+    state: restarted
+
+- name: Check Zookeeper Service
+  ansible.builtin.include_tasks: service_check.yml
