@@ -1,0 +1,31 @@
+---
+- name: Check role parameters
+  ansible.builtin.assert:
+    that:
+      - kafka_home is defined
+      - kafka_broker_id is defined
+    quiet: true
+
+- name: Check kafka_inter_broker_listener_name is valid
+  ansible.builtin.assert:
+    that:
+      - kafka_inter_broker_listener_name is defined
+      - kafka_inter_broker_listener_name in (kafka_listeners | map( attribute='name'))
+    msg: |
+      kafka_inter_broker_listener_name is undefined or not valid. 
+      Allowed values are: {{ kafka_listeners | map(attribute='name') | list }}
+    quiet: true
+
+- name: Check kafka_admin_listener_name is valid
+  ansible.builtin.assert:
+    that:
+      - kafka_admin_listener_name is defined
+      - kafka_admin_listener_name in (kafka_listeners | map(attribute='name'))
+    msg: |
+      kafka_admin_listener_name is undefined or not valid. 
+      Allowed values are: {{ kafka_listeners | map(attribute='name') | list }}
+    quiet: true
+
+- name: Initialize kafka_opts
+  ansible.builtin.set_fact:
+    kafka_java_opts: []

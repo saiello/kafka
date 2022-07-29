@@ -1,0 +1,9 @@
+---
+- name: Restart Kafka Service
+  ansible.builtin.service:
+    name: "{{ kafka_service_name }}"
+    state: restarted
+  when: not ansible_check_mode
+
+- name: Check Kafka Service
+  ansible.builtin.include_tasks: service_check.yml

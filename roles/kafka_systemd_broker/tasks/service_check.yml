@@ -1,0 +1,15 @@
+---
+- name: Verify Kafka is listening
+  ansible.builtin.wait_for:
+    host: "{{ kafka_advertised_host }}"
+    port: "{{ __kafka_admin_port }}"
+    timeout: 60
+  when: not (ansible_check_mode or kafka_skip_verify_listening)
+
+- name: Verify Kafka has no Under Replicated partitions
+  ansible.builtin.command: "{{ __kafka_commands_topics }} --describe --under-replicated-partitions"
+  register: result
+  until: result.stdout == ''
+  retries: 5
+  delay: 10
+  when: not (ansible_check_mode or kafka_skip_verify_under_replicated)

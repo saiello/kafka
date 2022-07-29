@@ -1,0 +1,43 @@
+---
+kafka_user: kafka
+kafka_group: kafka
+
+kafka_service_name: kafka
+kafka_service_file: /usr/lib/systemd/system/{{ kafka_service_name }}.service
+kafka_service_environment_file: /etc/sysconfig/{{ kafka_service_name }}
+kafka_service_limit_no_file: 65536
+kafka_service_limit_nproc: 65536
+kafka_service_limit_mem_lock: infinity
+kafka_service_timeout_stop_sec: 300
+
+kafka_max_heap: 1G
+kafka_min_heap: 1G
+
+kafka_template_backup: true
+
+kafka_log4j_dir: /var/log/kafka
+kafka_log_dirs:
+  - /var/data/kafka
+
+kafka_server_properties_file_name: server.properties
+kafka_server_properties_file: "{{ kafka_home }}/config/{{ kafka_server_properties_file_name }}"
+
+kafka_skip_verify_listening: false
+kafka_skip_verify_under_replicated: false
+
+# Listeners
+kafka_advertised_interface: eth1
+kafka_advertised_host: localhost # "{{ ansible_facts[kafka_advertised_interface].ipv4.address }}"
+
+kafka_listeners:
+  - name: PLAINTEXT
+    port: 9092
+    protocol: PLAINTEXT
+
+kafka_inter_broker_listener_name: PLAINTEXT
+kafka_admin_listener_name: PLAINTEXT
+
+kafka_jmx_enabled: false
+kafka_jmx_management_port: 9990
+
+kafka_additional_conf: {}

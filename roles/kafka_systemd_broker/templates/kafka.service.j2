@@ -1,0 +1,28 @@
+[Unit]
+Description=Apache Kafka
+After=syslog.target network.target
+
+
+[Service]
+Type=simple
+
+User={{ kafka_user }}
+Group={{ kafka_group }}
+
+EnvironmentFile=-{{ kafka_service_environment_file }}
+
+LimitNOFILE={{ kafka_service_limit_no_file }}
+LimitNPROC={{ kafka_service_limit_nproc }}
+LimitMEMLOCK={{ kafka_service_limit_mem_lock }}
+
+ExecStart={{ kafka_home }}/bin/kafka-server-start.sh {{ kafka_server_properties_file }}
+ExecStop={{ kafka_home }}/bin/kafka-server-stop.sh
+
+TimeoutStopSec={{ kafka_service_timeout_stop_sec }}
+SuccessExitStatus=143
+Restart=on-failure
+RestartSec=5s
+
+
+[Install]
+WantedBy=multi-user.target

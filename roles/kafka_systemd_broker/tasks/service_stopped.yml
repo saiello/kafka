@@ -1,0 +1,5 @@
+---
+- name: Stop Kafka
+  ansible.builtin.service:
+    name: "{{ kafka_service_name }}"
+    state: stopped

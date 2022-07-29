@@ -1,0 +1,71 @@
+---
+- name: Ensures prereqs are fullfilled
+  ansible.builtin.include_tasks: prereqs.yml
+
+- name: Ensures user exists
+  ansible.builtin.include_role:
+    name: kafka_install
+    tasks_from: user.yml
+
+- name: Create config dir for Kafka
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: 0755
+  with_items:
+    - "{{ kafka_home }}/config"
+    - "{{ kafka_log4j_dir }}"
+    - "{{ kafka_log_dirs }}"
+
+
+- name: Debug Kakfa Java Ops
+  ansible.builtin.debug: var=kafka_java_opts
+
+- name: Debug Kafka zookeeper.connect.servers
+  ansible.builtin.debug: var=kafka_zookeeper_connect_servers
+
+- name: Create server.properties configuration file
+  ansible.builtin.template:
+    src: server.properties.j2
+    dest: "{{ kafka_server_properties_file }}"
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: 0400
+    backup: "{{ kafka_template_backup }}"
+  notify: Restart kafka
+
+- name: Create environment configuration file
+  ansible.builtin.template:
+    src: kafka.j2
+    dest: "{{ kafka_service_environment_file }}"
+    mode: 0644
+    backup: "{{ kafka_template_backup }}"
+  notify: Restart kafka
+
+- name: Create systemd unit file
+  ansible.builtin.template:
+    src: kafka.service.j2
+    dest: "{{ kafka_service_file }}"
+    owner: root
+    group: root
+    mode: 0644
+    backup: "{{ kafka_template_backup }}"
+  become: true
+  notify:
+    - Reload systemd
+    - Restart kafka
+
+# ---------------------------
+# Enable Kafka Service
+# ---------------------------
+- name: Enable kafka
+  ansible.builtin.service:
+    name: "{{ kafka_service_name }}"
+    enabled: true
+  when: not ansible_check_mode
+
+
+- name: Run Handlers
+  ansible.builtin.meta: flush_handlers
