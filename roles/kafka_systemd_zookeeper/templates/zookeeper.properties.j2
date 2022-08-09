@@ -13,8 +13,8 @@ snapshot.trust.empty=true
 4lw.commands.whitelist=*
 
 {% if zookeeper_servers is defined %}
-{% for host, zk_attributes in zookeeper_servers.items() %}
-server.{{ zk_attributes.myid }}={{ zk_attributes.address }}:{{ zk_attributes.follower_port }}:{{ zk_attributes.election_port }}
+{% for zookeeper_server in zookeeper_servers %}
+server.{{ zookeeper_server.myid }}={{ zookeeper_server.address }}:{{ zookeeper_server.follower_port }}:{{ zookeeper_server.election_port }}
 {% endfor %}
 {% endif %}
 

@@ -13,7 +13,8 @@ kafka_service_timeout_stop_sec: 300
 kafka_max_heap: 1G
 kafka_min_heap: 1G
 
-kafka_template_backup: true
+kafka_template_backup: yes
+kafka_zookeeper_servers_ansible_group: zookeeper
 
 kafka_log4j_dir: /var/log/kafka
 kafka_log_dirs:
@@ -26,8 +27,7 @@ kafka_skip_verify_listening: false
 kafka_skip_verify_under_replicated: false
 
 # Listeners
-kafka_advertised_interface: eth1
-kafka_advertised_host: localhost # "{{ ansible_facts[kafka_advertised_interface].ipv4.address }}"
+kafka_advertised_host: "{{ ansible_default_ipv4.address }}"
 
 kafka_listeners:
   - name: PLAINTEXT

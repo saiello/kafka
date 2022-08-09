@@ -2,6 +2,7 @@
 - name: Check parameters
   ansible.builtin.assert:
     that:
+      - zookeeper_myid is defined
       - zookeeper_data_path is defined
       - zookeeper_logs_dir is defined
       - zookeeper_user is defined
@@ -53,6 +54,8 @@
     group: "{{ zookeeper_group }}"
     mode: 0775
 
+- name: Set Zookeeper Servers Facts
+  include_tasks: set_zk_facts.yml
 
 - name: Add Zookeeper config file
   ansible.builtin.template:

@@ -15,6 +15,7 @@ zookeeper_min_heap: 512M
 zookeeper_port_offset: 0
 zookeeper_client_port: "{{ 2181 + (zookeeper_port_offset | int) }}"
 
+zookeeper_servers_ansible_group: zookeeper
 # zookeeper_quorum_use_ipv4: true
 # zookeeper_quorum_use_ipv4_interface: eth1
 # zookeeper_quorum_address: "{{ ansible_hostname }}"

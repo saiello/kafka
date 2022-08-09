@@ -20,6 +20,28 @@
     - "{{ kafka_log_dirs }}"
 
 
+- name: Set Zookeeper Facts
+  ansible.builtin.include_role:
+    name: kafka_systemd_zookeeper
+    tasks_from: set_zk_facts.yml
+  vars:
+    zookeeper_servers_ansible_group: "{{ kafka_zookeeper_servers_ansible_group }}"
+
+- name: Check Zookeeper Facts are set
+  ansible.builtin.assert:
+    that:
+      - zookeeper_servers is defined
+    quiet: yes
+
+- name: Set Zookeeper Connect Servers Fact
+  ansible.builtin.set_fact:
+    kafka_zookeeper_connect_servers: |-
+      {{
+        zookeeper_servers | map(attribute='address') |
+        zip(zookeeper_servers | map(attribute='client_port')) |
+        map('join', ':')
+      }}
+
 - name: Debug Kakfa Java Ops
   ansible.builtin.debug: var=kafka_java_opts
 

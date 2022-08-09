@@ -8,6 +8,7 @@
         name:
           - sudo
           - java-1.8.0-openjdk
+          - iproute
         state: present
 
     - name: Display Ansible version

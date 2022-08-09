@@ -1,0 +1,57 @@
+---
+dependency:
+  name: galaxy
+driver:
+  name: docker
+platforms:
+
+  - name: machine1
+    image: registry.access.redhat.com/ubi8/ubi-init:latest
+    pre_build_image: true
+    privileged: true
+    command: "/usr/sbin/init"
+    groups:
+      - kafka
+      - zookeeper
+
+  - name: machine2
+    image: registry.access.redhat.com/ubi8/ubi-init:latest
+    pre_build_image: true
+    privileged: true
+    command: "/usr/sbin/init"
+    groups:
+      - kafka
+      - zookeeper
+
+  - name: machine3
+    image: registry.access.redhat.com/ubi8/ubi-init:latest
+    pre_build_image: true
+    privileged: true
+    command: "/usr/sbin/init"
+    groups:
+      - kafka
+      - zookeeper
+
+provisioner:
+  name: ansible
+  ansible_args:
+    - --diff
+  playbooks:
+    converge: converge.yml
+    prepare: ../shared/prepare.yml
+    verify: verify.yml
+  inventory:
+    host_vars:
+      machine1:
+        kafka_broker_id: 1
+        zookeeper_myid: 1
+      machine2:
+        kafka_broker_id: 2
+        zookeeper_myid: 2
+      machine3:
+        kafka_broker_id: 3
+        zookeeper_myid: 3
+      localhost:
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+verifier:
+  name: ansible

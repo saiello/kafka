@@ -1,0 +1,27 @@
+---
+- name: Gather Zookeeper facts
+  ansible.builtin.setup:
+  delegate_to: "{{ item }}"
+  delegate_facts: true
+  with_items: "{{ groups[zookeeper_servers_ansible_group] }}"
+
+- name: Init Zookeeper servers facts
+  ansible.builtin.set_fact:
+    zookeeper_servers: []
+
+- name: Set Zookeeper servers facts
+  ansible.builtin.set_fact:
+    zookeeper_servers: "{{ zookeeper_servers + [{
+          'myid': hostvars[item].zookeeper_myid,
+          'address': hostvars[item].ansible_default_ipv4.address,
+          'client_port': 2181 + (zookeeper_port_offset | int),
+          'follower_port': 2888 + (zookeeper_port_offset | int),
+          'election_port': 3888 + (zookeeper_port_offset | int)
+        }]
+    }}"
+  with_items: "{{ groups[zookeeper_servers_ansible_group] }}"
+
+- name: Print Zookeeper servers
+  ansible.builtin.debug:
+    var: zookeeper_servers
+    verbosity: 1
