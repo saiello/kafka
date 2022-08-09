@@ -1,4 +1,4 @@
-Kafka Install Role
+Zookeeper Systemd Role
 ====================
 
 tbc
