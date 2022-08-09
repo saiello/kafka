@@ -1,4 +1,7 @@
 ---
+# skip prerun because I am experiencing the issue described here:
+# https://github.com/ansible/ansible-lint/issues/2070
+prerun: false
 dependency:
   name: galaxy
 driver:
