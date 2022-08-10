@@ -4,6 +4,7 @@
     name: "{{ zookeeper_service_name }}"
     state: started
   notify: Verify Zookeeper is listening
+  become: true
 
 - name: Check Zookeeper Service
   ansible.builtin.include_tasks: service_check.yml

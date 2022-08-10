@@ -3,7 +3,7 @@
   ansible.builtin.service:
     name: "{{ kafka_service_name }}"
     state: started
-  notify: Restart kafka
+  become: true
 
 - name: Check Kafka Service
   ansible.builtin.include_tasks: service_check.yml

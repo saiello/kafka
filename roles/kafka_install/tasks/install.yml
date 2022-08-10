@@ -37,6 +37,7 @@
   ansible.builtin.stat:
     path: "{{ __kafka_remote_archive_path }}"
   register: __kafka_remote_archive
+  become: true
 
 - name: Ensure workdir {{ kafka_install_workdir }} exists.
   ansible.builtin.file:
@@ -66,11 +67,13 @@
     dest: "{{ kafka_install_workdir }}"
     remote_src: true
     creates: "{{ kafka_home }}"
+  become: true
 
 - name: Check kafka home
   ansible.builtin.stat:
     path: "{{ kafka_home }}"
   register: __kafka_home
+  become: true
 
 - name: "Check state of kafka home directory: {{ kafka_home }}"
   ansible.builtin.assert:
@@ -86,6 +89,7 @@
   ansible.builtin.command: "{{ kafka_home }}/bin/kafka-topics.sh --version"
   register: __kafka_microversion
   changed_when: false
+  become: true
 
 - name: "Check kafka version is: {{ kafka_version }}"
   ansible.builtin.assert:
@@ -94,3 +98,4 @@
       - __kafka_microversion is defined
     quiet: true
     fail_msg: Kafka version is not as expected {{ __kafka_microversion }}.
+  become: true
