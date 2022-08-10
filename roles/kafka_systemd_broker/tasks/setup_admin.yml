@@ -1,0 +1,9 @@
+---
+- name: Create admin config file
+  ansible.builtin.template:
+    src: admin.properties.j2
+    dest: "{{ __kafka_admin_config }}"
+  when: 
+    - __kafka_admin.require_command_config is defined
+    - __kafka_admin.require_command_config
+

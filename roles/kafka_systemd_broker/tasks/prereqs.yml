@@ -6,25 +6,22 @@
       - kafka_broker_id is defined
     quiet: true
 
+- saiello.kafka.kafka_config:
+    config: "{{ __kafka_input_config }}"
+
+- debug: var=__kafka_config
+- debug: var=__kafka_admin
+
 - name: Check kafka_inter_broker_listener_name is valid
   ansible.builtin.assert:
     that:
       - kafka_inter_broker_listener_name is defined
-      - kafka_inter_broker_listener_name in (kafka_listeners | map( attribute='name'))
+      - kafka_inter_broker_listener_name in __kafka_config.listeners
     msg: |
       kafka_inter_broker_listener_name is undefined or not valid. 
-      Allowed values are: {{ kafka_listeners | map(attribute='name') | list }}
+      Allowed values are: {{ __kafka_config.listeners.values() }}
     quiet: true
 
-- name: Check kafka_admin_listener_name is valid
-  ansible.builtin.assert:
-    that:
-      - kafka_admin_listener_name is defined
-      - kafka_admin_listener_name in (kafka_listeners | map(attribute='name'))
-    msg: |
-      kafka_admin_listener_name is undefined or not valid. 
-      Allowed values are: {{ kafka_listeners | map(attribute='name') | list }}
-    quiet: true
 
 - name: Initialize kafka_opts
   ansible.builtin.set_fact:

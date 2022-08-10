@@ -1,19 +1,48 @@
-{{ ansible_managed }}
+{{ ansible_managed }}
 
 broker.id={{ kafka_broker_id }}
 
-listener.security.protocol.map={{ kafka_listeners | map(attribute='name') | zip(kafka_listeners | map(attribute='protocol')) | map('join', ':') | join(',') }}
-listeners={{ kafka_listeners | map(attribute='name') | zip(kafka_listeners | map(attribute='port')) | map('join', '://:') | join(',') }}
-advertised.listeners={{ kafka_listeners | map(attribute='name') | zip(kafka_listeners | map(attribute='port')) | map('join', '://' + kafka_advertised_host + ':') | join(',') }}
+listener.security.protocol.map={{ __kafka_config.core['listener.security.protocol.map'] }}
+listeners={{ __kafka_config.core['listeners'] }}
+advertised.listeners={{ __kafka_config.core['advertised.listeners'] }}
 
 inter.broker.listener.name={{ kafka_inter_broker_listener_name }}
 
 log.dirs={{ kafka_log_dirs | join(',') }}
 
 zookeeper.connect={{ kafka_zookeeper_connect_servers | join(',') }}
-zookeeper.connection.timeout.ms=6000
+# TODO allow to configure zookeeper
 
 
-{% for kafka_conf_key, kafka_conf_value in kafka_additional_conf.items() %}
+{% for l_name, l_config in __kafka_config.listeners.items() %}
+{% if l_config.tls %}
+# ---- {{ l_name }} -----
+listener.name.{{ l_name }}.ssl.truststore.location={{ l_config.truststore_location }}
+listener.name.{{ l_name }}.ssl.truststore.type={{ l_config.truststore_type }}
+listener.name.{{ l_name }}.ssl.keystore.location={{ l_config.keystore_location }}
+listener.name.{{ l_name }}.ssl.keystore.password={{ l_config.keystore_password }}
+listener.name.{{ l_name }}.ssl.keystore.type={{ l_config.keystore_type }}
+{% if 'sasl' in l_config %}
+listener.name.{{ l_name }}.sasl.enabled.mechanisms={{ l_config.sasl.keys() | map('upper') | join(',') }}
+{% for sasl_mechanism, sasl_config in l_config.sasl.items() %}
+listener.name.{{ l_name }}.{{ sasl_mechanism }}.sasl.jaas.config={{ sasl_config }}
+{% endfor %}
+{% endif %}
+{% if 'ssl_client_auth' in l_config %}
+listener.name.{{ l_name }}.ssl.client.auth={{ l_config.ssl_client_auth }}
+{% endif %}
+{% endif %}
+{% endfor %}
+
+
+
+{% if __kafka_config.authorization %}
+allow.everyone.if.no.acl.found = {{ __kafka_config.authorization['allow.everyone.if.no.acl.found'] }}
+authorizer.class.name = {{ __kafka_config.authorization['authorizer.class.name'] }}
+super.users = {{ __kafka_config.authorization['super.users'] | join(';') }}
+{% endif %}
+
+
+{% for kafka_conf_key, kafka_conf_value in __kafka_config.additional_config.items() %}
 {{ kafka_conf_key }}={{ kafka_conf_value }}
 {% endfor %}

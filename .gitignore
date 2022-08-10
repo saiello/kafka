@@ -1,5 +1,10 @@
+__pycache__
 venv
 *.tgz
 *.tar.gz
 
 .vagrant
+!molecule/shared/certs/
+molecule/shared/certs/*
+!molecule/shared/certs/configs/
+!molecule/shared/certs/Makefile

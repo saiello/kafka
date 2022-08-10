@@ -1,0 +1,23 @@
+{
+    "CN": "kafka",
+    "names": [
+        {
+            "C":  "IT",
+            "L":  "Rome",
+            "O":  "Saiello"
+        }
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    },
+   "hosts": [
+      "localhost",
+      "machine1",
+      "machine2",
+      "machine3",
+      "machine1.molecule",
+      "machine2.molecule",
+      "machine3.molecule"
+   ]
+}

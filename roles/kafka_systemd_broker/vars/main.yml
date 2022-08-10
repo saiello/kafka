@@ -1,7 +1,19 @@
 ---
 __kafka_commands_bin: "{{ kafka_home }}/bin"
 
-__kafka_admin_port: "{{ (kafka_listeners | items2dict(key_name='name', value_name='port'))[kafka_admin_listener_name] | int }}"
-__kafka_bootstra_servers: --bootstrap-server {{ kafka_advertised_host }}:{{ __kafka_admin_port }}
 
-__kafka_commands_topics: "{{ __kafka_commands_bin }}/kafka-topics.sh {{ __kafka_bootstra_servers }}"
+__kafka_input_config:
+  advertised_host: "{{ kafka_advertised_host }}"
+  tls: "{{ kafka_tls_config }}"
+  authorization: "{{ kafka_authorization }}"
+  listeners: "{{ kafka_listeners }}"
+  additional_config: "{{ kafka_additional_conf }}"
+  admin: "{{ kafka_admin }}"
+
+__kafka_admin_config: "{{ kafka_home }}/config/admin.properties"
+
+__kafka_bootstrap_servers: --bootstrap-server {{ __kafka_admin.listener }}
+__kafka_commands_opts: "{{ __kafka_admin.require_command_config | ternary('--command-config ' + __kafka_admin_config, '') }}"
+__kafka_commands_topics: "{{ __kafka_commands_bin }}/kafka-topics.sh {{ __kafka_bootstrap_servers }} {{ __kafka_commands_opts }}"
+
+

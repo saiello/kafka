@@ -1,0 +1,8 @@
+- hosts: machine1
+  tasks:
+    - debug: 
+        msg: "ansible_default_ipv4: {{ ansible_default_ipv4.address }}"
+    - debug: 
+        msg: "ansible_default_ipv4: {{ ansible_eth1.ipv4.address }}"
+    - debug: 
+        var: ansible_facts.eth1.ipv4.address

@@ -1,0 +1,50 @@
+
+   
+{
+	"signing": {
+		"profiles": {
+			"CA": {
+				"usages": ["cert sign"],
+				"ca_constraint": { "is_ca": true, "max_path_len":0 },
+				"expiry": "87600h"
+			},
+			"ca-intermediate": {
+				"usages": ["cert sign"],
+				"ca_constraint": { "is_ca": true, "max_path_len":0 },
+				"expiry": "87600h"
+			},
+			"cert-cluster": {
+				"usages": ["server auth", "client auth", "signing", "key encipherment"],
+				"expiry": "87600h"
+			},
+			"cert-admin": {
+				"usages": ["client auth", "signing", "key encipherment"],
+				"expiry": "87600h"
+			},
+			"clusterCA": {
+				"usages": ["cert sign"],
+                		"ca_constraint": { "is_ca": true, "max_path_len":0 },
+				"expiry": "87600h"
+			},
+			"clientsCA": {
+				"usages": ["cert sign"],
+                		"ca_constraint": { "is_ca": true, "max_path_len":0 },
+				"expiry": "87600h"
+			},
+			"email": {
+				"usages": ["s/mime"],
+				"expiry": "87600h"
+			}
+		},
+		"default": {
+			"usages": ["digital signature", "email protection"],
+			"expiry": "87600h"
+		}
+	},
+	"auth_key": {
+		"garbage": {
+			"type":"standard",
+			"key":"0123456789ABCDEF0123456789ABCDEF"
+		}
+	}
+}

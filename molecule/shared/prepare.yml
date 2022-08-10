@@ -1,6 +1,8 @@
 ---
 - name: Prepare
   hosts: all
+  vars:
+    certs_source_base: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/molecule/shared/certs"
   tasks:
 
     - name: "Ensure required packages are installed."
@@ -14,3 +16,20 @@
     - name: Display Ansible version
       ansible.builtin.debug:
         msg: "Ansible version is  {{ ansible_version.full }}"
+
+    
+    - name: Create SSL certs folder
+      file: 
+        name: /etc/certs 
+        state: directory
+      become: true
+
+    - name: Copy SSL certs
+      copy: 
+        src: "{{ certs_source_base }}/{{ item }}"
+        dest: /etc/certs
+      with_items:
+        - cert-cluster.p12
+        - cert-admin.p12
+        - ca-root.pem
+      become: true

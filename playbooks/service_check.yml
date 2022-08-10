@@ -1,0 +1,20 @@
+---
+- name: Check Services
+  hosts: all
+  vars:
+    kafka_home: /opt/kafka/kafka_2.13-3.1.1
+  tasks:
+    - name: Check Zookeeper Service
+      ansible.builtin.include_role:
+        name: kafka_systemd_zookeeper
+        tasks_from: service_check.yml
+
+    - name: Ensure Admin 
+      ansible.builtin.include_role:
+        name: kafka_systemd_broker
+        tasks_from: setup_admin.yml
+
+    - name: Check Kafka Service
+      ansible.builtin.include_role:
+        name: kafka_systemd_broker
+        tasks_from: service_check.yml

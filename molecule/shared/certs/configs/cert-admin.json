@@ -1,0 +1,14 @@
+{
+    "CN": "admin",
+    "names": [
+        {
+            "C":  "IT",
+            "L":  "Rome",
+            "O":  "Saiello"
+        }
+    ],
+    "key": {
+        "algo": "rsa",
+        "size": 2048
+    }
+}

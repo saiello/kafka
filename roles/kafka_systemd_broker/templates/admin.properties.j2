@@ -1,0 +1,4 @@
+security.protocol={{ __kafka_admin.protocol }}
+{% for prop_name, prop_value in __kafka_admin.options.items() %}
+{{ prop_name }}={{ prop_value }}
+{% endif %}

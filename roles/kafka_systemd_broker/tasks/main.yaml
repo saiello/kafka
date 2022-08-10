@@ -20,6 +20,8 @@
     - "{{ kafka_log_dirs }}"
   become: true
 
+- name: Ensure Admin 
+  ansible.builtin.include_tasks: setup_admin.yml
 
 - name: Set Zookeeper Facts
   ansible.builtin.include_role:
