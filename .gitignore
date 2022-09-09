@@ -1,3 +1,5 @@
 venv
 *.tgz
 *.tar.gz
+
+.vagrant
