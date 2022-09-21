@@ -73,7 +73,7 @@
 
 - name: Create server.properties configuration file
   ansible.builtin.template:
-    src: server.properties.j2
+    src: "{{ kafka_server_properties_template }}"
     dest: "{{ kafka_server_properties_file }}"
     owner: "{{ kafka_user }}"
     group: "{{ kafka_group }}"

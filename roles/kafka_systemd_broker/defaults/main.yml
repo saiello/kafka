@@ -20,6 +20,7 @@ kafka_log4j_dir: /var/log/kafka
 kafka_log_dirs:
   - /var/data/kafka
 
+kafka_server_properties_template: server.properties.j2
 kafka_server_properties_file_name: server.properties
 kafka_server_properties_file: "{{ kafka_home }}/config/{{ kafka_server_properties_file_name }}"
 

@@ -1,0 +1,21 @@
+{{ ansible_managed }}
+# This is a custom server properties.
+# Be sure kafka_server_properties_template is defined in molecule.yml
+
+broker.id={{ kafka_broker_id }}
+
+listener.security.protocol.map={{ kafka_listeners | map(attribute='name') | zip(kafka_listeners | map(attribute='protocol')) | map('join', ':') | join(',') }}
+listeners={{ kafka_listeners | map(attribute='name') | zip(kafka_listeners | map(attribute='port')) | map('join', '://:') | join(',') }}
+advertised.listeners={{ kafka_listeners | map(attribute='name') | zip(kafka_listeners | map(attribute='port')) | map('join', '://' + kafka_advertised_host + ':') | join(',') }}
+
+inter.broker.listener.name={{ kafka_inter_broker_listener_name }}
+
+log.dirs={{ kafka_log_dirs | join(',') }}
+
+zookeeper.connect={{ kafka_zookeeper_connect_servers | join(',') }}
+zookeeper.connection.timeout.ms=6000
+
+
+{% for kafka_conf_key, kafka_conf_value in kafka_additional_conf.items() %}
+{{ kafka_conf_key }}={{ kafka_conf_value }}
+{% endfor %}
