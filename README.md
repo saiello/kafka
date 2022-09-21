@@ -24,6 +24,14 @@ Plugins and modules within a collection may be tested with only specific Ansible
 * [kafka_systemd_broker](https://github.com/saiello/kafka/blob/main/roles/kafka_systemd_broker/README.md): configure kafka broker systemd unit
 
 
+### Playbooks
+
+* [setup.yml](https://github.com/saiello/kafka/blob/main/playbooks/setup.yml): initial cluster setup
+* [update.yml](https://github.com/saiello/kafka/blob/main/playbooks/update.yml): configure a cluster performing a safe rolling update
+* [verify.yml](https://github.com/saiello/kafka/blob/main/playbooks/verify.yml): perform some check
+* [restart.yml](https://github.com/saiello/kafka/blob/main/playbooks/restart.yml): restart a cluster
+* [upgrade.yml](https://github.com/saiello/kafka/blob/main/playbooks/upgrade.yml): upgrade a cluster increasing the kafka version
+
 ### Installing the collection
 
 To install this Ansible collection:
