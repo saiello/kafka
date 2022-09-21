@@ -1,1 +1,1 @@
-- import_playbook: 'saiello.kafka.playbook'
+- import_playbook: 'saiello.kafka.setup'

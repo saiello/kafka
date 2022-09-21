@@ -1,0 +1,15 @@
+---
+- name: Restart cluster
+  hosts: all
+  serial: 1
+  tasks:
+
+    - name: Restart Zookeeper Service
+      include_role:
+        name: kafka_systemd_zookeeper
+        tasks_from: service_restarted.yml
+
+    - name: Restart Kafka Service
+      include_role:
+        name: kafka_systemd_broker
+        tasks_from: service_restarted.yml

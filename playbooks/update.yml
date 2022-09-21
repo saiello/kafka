@@ -1,0 +1,7 @@
+---
+- name: Update a cluster
+  hosts: all
+  serial: 1
+  roles:
+    - kafka_systemd_zookeeper
+    - kafka_systemd_broker

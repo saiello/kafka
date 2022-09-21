@@ -27,7 +27,8 @@ kafka_skip_verify_listening: false
 kafka_skip_verify_under_replicated: false
 
 # Listeners
-kafka_advertised_host: "{{ ansible_default_ipv4.address }}"
+kafka_advertised_interface_name: eth1
+kafka_advertised_host: "{{ ansible_facts[kafka_advertised_interface_name].ipv4.address }}"
 
 kafka_listeners:
   - name: PLAINTEXT

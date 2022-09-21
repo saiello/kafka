@@ -1,0 +1,8 @@
+---
+- name: Update a cluster
+  hosts: all
+  serial: 1
+  tasks:
+    - fail:
+        msg: Not yet implemented
+      when: true

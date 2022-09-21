@@ -13,7 +13,7 @@
   ansible.builtin.set_fact:
     zookeeper_servers: "{{ zookeeper_servers + [{
           'myid': hostvars[item].zookeeper_myid,
-          'address': hostvars[item].ansible_default_ipv4.address,
+          'address': hostvars[item].ansible_facts[zookeeper_interface_name].ipv4.address,
           'client_port': 2181 + (zookeeper_port_offset | int),
           'follower_port': 2888 + (zookeeper_port_offset | int),
           'election_port': 3888 + (zookeeper_port_offset | int)

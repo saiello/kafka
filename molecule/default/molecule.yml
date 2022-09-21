@@ -29,6 +29,11 @@ provisioner:
     prepare: ../shared/prepare.yml
     verify: verify.yml
   inventory:
+    group_vars:
+      all:
+        kafka_home: /opt/kafka/kafka_2.13-3.1.1
+        kafka_advertised_interface_name: eth0
+        zookeeper_interface_name: eth0
     host_vars:
       instance:
         kafka_broker_id: 0

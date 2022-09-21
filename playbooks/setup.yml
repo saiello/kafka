@@ -1,8 +1,6 @@
 ---
-- name: Converge
+- name: Setup a cluster
   hosts: all
-  vars:
-    kafka_home: /opt/kafka/kafka_2.13-3.1.1
   roles:
     - kafka_install
     - kafka_systemd_zookeeper

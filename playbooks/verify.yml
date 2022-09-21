@@ -1,0 +1,14 @@
+---
+- name: Verify cluster
+  hosts: all
+  tasks:
+
+    - name: Check Zookeeper Service
+      include_role:
+        name: kafka_systemd_zookeeper
+        tasks_from: service_check.yml
+
+    - name: Check Kafka Service
+      include_role:
+        name: kafka_systemd_broker
+        tasks_from: service_check.yml

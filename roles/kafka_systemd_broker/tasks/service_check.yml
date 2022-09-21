@@ -13,3 +13,4 @@
   retries: 5
   delay: 10
   when: not (ansible_check_mode or kafka_skip_verify_under_replicated)
+  become: true
