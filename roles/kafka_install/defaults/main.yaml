@@ -12,9 +12,23 @@ kafka_group: kafka
 kafka_version: 3.1.1
 kafka_scala_version: 2.13
 
+kafka_rhn_id: 104335
+
 kafka_install_workdir: /opt/kafka
 kafka_home: "{{ kafka_install_workdir }}/kafka_{{ kafka_scala_version }}-{{ kafka_version }}"
 
-kafka_install_download_base_url: https://archive.apache.org/dist/kafka/{{ kafka_version }}
-kafka_install_archive_file: kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz
+kafka_install_download_base_url: >-
+  {{ 
+    ('https://archive.apache.org/dist/kafka/' + kafka_version | string) 
+    if (kafka_amqstreams_version is not defined) 
+    else ('https://access.redhat.com/jbossnetwork/restricted/softwareDownload.html?softwareId=' + kafka_rhn_id | string) 
+  }}
+
+kafka_install_archive_file: >-
+  {{ 
+    ('kafka_' + kafka_scala_version | string + '-' + kafka_version | string + '.tgz') 
+    if (kafka_amqstreams_version is not defined) 
+    else ('amq-streams-' + kafka_amqstreams_version | string + '.zip') 
+  }}
+
 kafka_install_download_url: "{{ kafka_install_download_base_url }}/{{ kafka_install_archive_file }}"

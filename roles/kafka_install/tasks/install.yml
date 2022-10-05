@@ -10,6 +10,10 @@
     __kafka_remote_archive_path: "{{ kafka_install_workdir }}/{{ kafka_install_archive_file }}"
     __kafka_local_archive_path: "{{ __kafka_local_path.stat.path }}/{{ kafka_install_archive_file }}"
 
+- name: Set amqstreams enable
+  ansible.builtin.set_fact:
+    __kafka_amqstreams_enable: "{{ kafka_amqstreams_version is defined }}"
+
 - name: Check local archive
   ansible.builtin.stat:
     path: "{{ __kafka_local_archive_path }}"
@@ -24,14 +28,12 @@
     - name: Download from rhn
       ansible.builtin.include_tasks: install/rhn.yml
       when:
-        - __kafka_amqstreams_enable is defined
         - __kafka_amqstreams_enable
-        - __kafka_rhn_id is defined
 
     - name: Download from web
       ansible.builtin.include_tasks: install/web.yml
       when:
-        - __kafka_rhn_id is not defined
+        - not __kafka_amqstreams_enable
 
 - name: Check remote archive
   ansible.builtin.stat:
