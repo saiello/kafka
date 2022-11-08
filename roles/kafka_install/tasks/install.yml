@@ -1,10 +1,23 @@
 ---
-- name: "Check selected kafka version: {{ kafka_version }}"
-  ansible.builtin.assert:
-    that:
-      - kafka_versions[kafka_version] is defined
-    quiet: true
-    fail_msg: "Kafka version {{ kafka_version }} not defined, the allowed versions are: {{ kafka_versions.keys() }}"
+- name: Check install version
+  block:
+    - name: "Check selected kafka version: {{ kafka_version }}"
+      ansible.builtin.assert:
+        that:
+          - kafka_versions[kafka_version] is defined
+        quiet: true
+        fail_msg: "Kafka version {{ kafka_version }} not defined, the allowed versions are: {{ kafka_versions.keys() }}"
+      when:
+        - not amqstreams_enable
+
+    - name: "Check selected AMQ streams version: {{ amqstreams_version }}"
+      ansible.builtin.assert:
+        that:
+          - amqstreams_versions[amqstreams_version] is defined
+        quiet: true
+        fail_msg: "AMQ streams version {{ amqstreams_version }} not defined, the allowed versions are: {{ amqstreams_versions.keys() }}"
+      when:
+        - amqstreams_enable
   run_once: true
 
 - name: Check local download archive path
@@ -81,6 +94,8 @@
     dest: "{{ kafka_install_workdir }}"
     remote_src: true
     creates: "{{ kafka_home }}"
+    owner:  "{{ kafka_user }}"
+    group:  "{{ kafka_group }}"
   become: true
 
 - name: Check kafka home
@@ -105,11 +120,25 @@
   changed_when: false
   become: true
 
-- name: "Check kafka version is: {{ kafka_version }}"
-  ansible.builtin.assert:
-    that:
-      - __kafka_microversion is defined
-      - __kafka_microversion is defined
-    quiet: true
-    fail_msg: Kafka version is not as expected {{ __kafka_microversion }}.
-  become: true
+- name: Check Kafka microversion
+  when:
+    - __kafka_microversion is defined
+    - __kafka_microversion.stdout is defined
+  block:
+    - name: "Kafka version is: {{ kafka_version }}"
+      ansible.builtin.assert:
+        that:
+          - __kafka_microversion.stdout == kafka_versions[kafka_version]['microversion']
+        quiet: true
+        fail_msg: Kafka version is not as expected {{ __kafka_microversion }}.
+      when:
+        - not amqstreams_enable
+
+    - name: "AMQ streams version is: {{ amqstreams_version }}"
+      ansible.builtin.assert:
+        that:
+          - __kafka_microversion.stdout == amqstreams_versions[amqstreams_version]['microversion']
+        quiet: true
+        fail_msg: AMQ streams version is not as expected {{ __kafka_microversion }}.
+      when:
+        - amqstreams_enable

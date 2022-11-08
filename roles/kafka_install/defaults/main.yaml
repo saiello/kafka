@@ -10,6 +10,8 @@ kafka_user: kafka
 kafka_group: kafka
 
 kafka_version: "{{ kafka_versions.keys() | first }}"
+
+amqstreams_version: "{{ amqstreams_versions.keys() | first }}"
 amqstreams_enable: false
 
 kafka_install_workdir: /opt/kafka
