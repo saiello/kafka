@@ -1,7 +1,7 @@
 ---
-- name: Download Kafka from {{ kafka_install_download_url }}
+- name: Download Kafka from {{ __kafka_install_download_url }}
   ansible.builtin.get_url:
-    url: "{{ kafka_install_download_url }}"
+    url: "{{ __kafka_install_download_url }}"
     dest: "{{ __kafka_local_archive_path }}"
     url_username: "{{ kafka_install_url_username | default(omit) }}"
     url_password: "{{ kafka_install_url_password | default(omit) }}"

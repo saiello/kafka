@@ -1,14 +1,43 @@
 ---
+- name: Check install version
+  block:
+    - name: "Check selected kafka version: {{ kafka_version }}"
+      ansible.builtin.assert:
+        that:
+          - kafka_versions[kafka_version] is defined
+        quiet: true
+        fail_msg: "Kafka version {{ kafka_version }} not defined, the allowed versions are: {{ kafka_versions.keys() }}"
+      when:
+        - not amqstreams_enable
+
+    - name: "Check selected AMQ streams version: {{ amqstreams_version }}"
+      ansible.builtin.assert:
+        that:
+          - amqstreams_versions[amqstreams_version] is defined
+        quiet: true
+        fail_msg: "AMQ streams version {{ amqstreams_version }} not defined, the allowed versions are: {{ amqstreams_versions.keys() }}"
+      when:
+        - amqstreams_enable
+  run_once: true
+
 - name: Check local download archive path
   ansible.builtin.stat:
     path: "{{ lookup('env', 'PWD') }}"
   register: __kafka_local_path
   delegate_to: localhost
 
+- name: Set download filename
+  ansible.builtin.set_fact:
+    __kafka_install_archive_file: "{{ amqstreams_enable | ternary(amqstreams_archive_filename, kafka_archive_filename) }}"
+
 - name: Set download paths
   ansible.builtin.set_fact:
-    __kafka_remote_archive_path: "{{ kafka_install_workdir }}/{{ kafka_install_archive_file }}"
-    __kafka_local_archive_path: "{{ __kafka_local_path.stat.path }}/{{ kafka_install_archive_file }}"
+    __kafka_remote_archive_path: "{{ kafka_install_workdir }}/{{ __kafka_install_archive_file }}"
+    __kafka_local_archive_path: "{{ __kafka_local_path.stat.path }}/{{ __kafka_install_archive_file }}"
+
+- name: Set download url
+  ansible.builtin.set_fact:
+    __kafka_install_download_url: "{{ amqstreams_enable | ternary(amqstreams_download_url, kafka_download_url) }}"
 
 - name: Check local archive
   ansible.builtin.stat:
@@ -24,14 +53,12 @@
     - name: Download from rhn
       ansible.builtin.include_tasks: install/rhn.yml
       when:
-        - __kafka_amqstreams_enable is defined
-        - __kafka_amqstreams_enable
-        - __kafka_rhn_id is defined
+        - amqstreams_enable
 
     - name: Download from web
       ansible.builtin.include_tasks: install/web.yml
       when:
-        - __kafka_rhn_id is not defined
+        - not amqstreams_enable
 
 - name: Check remote archive
   ansible.builtin.stat:
@@ -93,11 +120,25 @@
   changed_when: false
   become: true
 
-- name: "Check kafka version is: {{ kafka_version }}"
-  ansible.builtin.assert:
-    that:
-      - __kafka_microversion is defined
-      - __kafka_microversion is defined
-    quiet: true
-    fail_msg: Kafka version is not as expected {{ __kafka_microversion }}.
-  become: true
+- name: Check Kafka microversion
+  when:
+    - __kafka_microversion is defined
+    - __kafka_microversion.stdout is defined
+  block:
+    - name: "Kafka version is: {{ kafka_version }}"
+      ansible.builtin.assert:
+        that:
+          - __kafka_microversion.stdout == kafka_versions[kafka_version]['microversion']
+        quiet: true
+        fail_msg: Kafka version is not as expected {{ __kafka_microversion }}.
+      when:
+        - not amqstreams_enable
+
+    - name: "AMQ streams version is: {{ amqstreams_version }}"
+      ansible.builtin.assert:
+        that:
+          - __kafka_microversion.stdout == amqstreams_versions[amqstreams_version]['microversion']
+        quiet: true
+        fail_msg: AMQ streams version is not as expected {{ __kafka_microversion }}.
+      when:
+        - amqstreams_enable
