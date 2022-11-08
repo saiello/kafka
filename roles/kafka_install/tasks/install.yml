@@ -67,6 +67,8 @@
     dest: "{{ kafka_install_workdir }}"
     remote_src: true
     creates: "{{ kafka_home }}"
+    owner:  "{{ kafka_user }}"
+    group:  "{{ kafka_group }}"
   become: true
 
 - name: Check kafka home
