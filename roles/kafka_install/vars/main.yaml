@@ -1,5 +1,4 @@
 ---
----
 # upstream
 kafka_scala_version: "{{ kafka_versions[kafka_version]['scala_version'] }}"
 kafka_archive_filename: "kafka_{{ kafka_scala_version }}-{{ kafka_version }}.tgz"
@@ -16,6 +15,9 @@ amqstreams_dirname: "kafka_{{ amqstreams_scala_version }}-{{ amqstreams_versions
 
 # upstream catalogue
 kafka_versions:
+  3.3.1:
+    scala_version: 2.13
+    microversion: 3.3.1 (Commit:e23c59d00e687ff5)
   3.2.3:
     scala_version: 2.13
     microversion: 3.2.3 (Commit:50029d3ed8ba576f)
@@ -31,6 +33,10 @@ kafka_versions:
 
 # amqstreams catalogue
 amqstreams_versions:
+  2.3.0:
+    scala_version: 2.13
+    microversion: 3.3.1.redhat-00008 (Commit:da60911214b98021)
+    rhn_id: 105011
   2.2.0:
     scala_version: 2.13
     microversion: 3.2.3.redhat-00003 (Commit:8c8f89d8e34196ab)
