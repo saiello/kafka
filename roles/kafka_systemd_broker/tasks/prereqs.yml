@@ -10,7 +10,7 @@
     config: "{{ __kafka_input_config }}"
 
 - debug: var=__kafka_config
-- debug: var=__kafka_admin
+- debug: var=__admin_config
 
 - name: Check kafka_inter_broker_listener_name is valid
   ansible.builtin.assert:

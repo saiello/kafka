@@ -1,8 +1,8 @@
 ---
 - name: Verify Kafka is listening
   ansible.builtin.wait_for:
-    host: "{{ __kafka_admin.host }}"
-    port: "{{ __kafka_admin.port }}"
+    host: "{{ __admin_config.host }}"
+    port: "{{ __admin_config.port }}"
     timeout: 60
   when: not (ansible_check_mode or kafka_skip_verify_listening)
 
