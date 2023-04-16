@@ -12,8 +12,8 @@ __kafka_input_config:
 
 __kafka_admin_config: "{{ kafka_home }}/config/admin.properties"
 
-__kafka_bootstrap_servers: --bootstrap-server {{ __kafka_admin.listener }}
-__kafka_commands_opts: "{{ __kafka_admin.require_command_config | ternary('--command-config ' + __kafka_admin_config, '') }}"
+__kafka_bootstrap_servers: --bootstrap-server {{ __admin_config.listener }}
+__kafka_commands_opts: "{{ __admin_config.require_command_config | ternary('--command-config ' + __kafka_admin_config, '') }}"
 __kafka_commands_topics: "{{ __kafka_commands_bin }}/kafka-topics.sh {{ __kafka_bootstrap_servers }} {{ __kafka_commands_opts }}"
 
 
