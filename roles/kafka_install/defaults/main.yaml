@@ -1,6 +1,6 @@
 ---
 kafka_prereqs_setup_openjdk: true
-kafka_prereqs_setup_openjdk_package_name: java-1.8.0-openjdk.x86_64
+kafka_prereqs_setup_openjdk_package_name: java-11-openjdk
 
 kafka_prereqs_packages:
   - nmap-ncat
