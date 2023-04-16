@@ -33,11 +33,13 @@ authentication_spec = dict(
   options=dict(
     type=dict(
       type='str',
-      choices=['tls', 'plain', 'scram-sha-256', 'scram-sha-512']
+      choices=['none', 'plain', 'tls', 'scram-sha-256', 'scram-sha-512', 'oauthbearer', 'gssapi']
+    ),
+    config=dict(
+      type='dict'
     )
   )
 )
-
 
 argument_config_spec = dict(
   advertised_host=dict(
@@ -117,7 +119,6 @@ class ActionModule(ActionBase):
     return dict(ansible_facts=dict(ret))
 
 
-
 class KafkaConfigGenerator():
 
   def __init__(self, config):
@@ -134,13 +135,11 @@ class KafkaConfigGenerator():
   def _coalesce_listeners(self, listeners):
 
     advertised_host = self._config.pop('advertised_host', 'localhost')
-    tls = self._config.pop('tls', None)
+    tls = self._config.pop('tls', {})
     listener_map = dict()
 
     for listener in listeners:
     
-      listener['name'] = listener['name'].upper()
-
       if 'advertised' not in listener:
         listener['advertised'] = advertised_host
 
@@ -150,13 +149,13 @@ class KafkaConfigGenerator():
       if sasl and is_tls:
         listener['protocol'] = 'SASL_SSL'
       elif sasl:
-        listener['protocol'] = 'SASL_PLAIN'
+        listener['protocol'] = 'SASL_PLAINTEXT'
       elif is_tls:
         listener['protocol'] = 'SSL'
       else:
         listener['protocol'] = 'PLAINTEXT'
 
-      if tls is not None:
+      if tls:
         # TODO support different trustore types
         listener['truststore_type'] = 'PEM'
         listener['truststore_location'] = tls['trustedCA']
@@ -170,6 +169,9 @@ class KafkaConfigGenerator():
         authentication = listener['authentication']
         authentication_type = authentication['type']
         authentication_config = authentication.pop('config', {})
+        
+        jaas_login_module_args = ' \\\\n'.join(['{}="{}"'.rjust(9, ' ')
+          .format(k, v) for k, v in authentication_config.items()])
 
         if authentication_type == 'tls':
           listener['ssl_client_auth'] = authentication_config.pop('tls_client_auth', 'required')
@@ -179,17 +181,29 @@ class KafkaConfigGenerator():
             authentication_type: authentication_config.pop('jaas_config', 'org.apache.kafka.common.security.scram.ScramLoginModule required;')
           }
         
+        if authentication_type in ['oauthbearer']:
+          listener['sasl'] = {
+            authentication_type: authentication_config.pop('jaas_config', 'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule required \\\\n{};'
+              .format(jaas_login_module_args))
+          }
+
+        if authentication_type in ['gssapi']:
+          listener['sasl'] = {
+            authentication_type: authentication_config.pop('jaas_config', 'com.sun.security.auth.module.Krb5LoginModule required \\\\n{};'
+              .format(jaas_login_module_args))
+          }
+
         if authentication_type == 'plain':
           pass # TODO 
       
-      listener_map[listener['name'].lower()] = listener
+      listener_map[listener['name']] = listener
 
     return listener_map
 
   def _authorization_config(self):
     """Build the authorization config dictionary"""
 
-    if 'authorization' not in self._config:
+    if 'authorization' not in self._config or not self._config['authorization']:
       return {}
     
     authorization = self._config['authorization']

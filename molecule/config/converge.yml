@@ -13,20 +13,77 @@
     # Configuration #1 - xxxxx
     - saiello.kafka.kafka_config:
         config:
-          advertise_host: "{{ ansible_host }}"
+          advertised_host: "{{ ansible_host }}"
 
-          tls:
-            trustedCAs:
-              - "{{ certs_source_base }}/ca-root.pem"
+          tls: {}
+            #trustedCA: "{{ certs_source_base }}/ca-root.pem"
+
           listeners:
-            - name: replication
-              port: 9091
-              tls: true
-            - name: admin
+            - name: plain
+              port: 9092
+              tls: false
+            - name: ssl
               port: 9093
               tls: true
-            - name: authenticated
+            - name: sasl_plain_scram-sha-512
               port: 9094
-              tls: true
+              tls: false
+              authentication:
+                type: scram-sha-512
+            - name: sasl_plain_oauthbearer
+              port: 9095
+              tls: false
+              authentication:
+                type: oauthbearer
+                config:
+                  oauth.valid.issuer.uri: "http://AUTH_SERVER/auth/realms/REALM"
+                  oauth.jwks.endpoint.uri: "https://AUTH_SERVER/auth/realms/REALM/protocol/openid-connect/certs"
+                  oauth.username.claim: "preferred_username"
+                  oauth.client.id: "kafka-broker"
+                  oauth.client.secret: "kafka-secret"
+                  oauth.token.endpoint.uri: "https://AUTH-SERVER-ADDRESS/token"
+            - name: sasl_plain_gssapi
+              port: 9096
+              tls: false
+              authentication:
+                type: gssapi
+                config:
+                  useKeyTab: true
+                  storeKey: true
+                  keyTab: "/opt/kafka/krb5/zookeeper-node1.keytab"
+                  principal: "zookeeper/node1.example.redhat.com@EXAMPLE.REDHAT.COM"
+   
+          admin:
+            listener_name: plain
+          
+          authorization: {}
 
-    - debug: var=__kafka_config
+          additional_config: {}
+
+    #- debug: var=__kafka_config
+
+    - name: "Test '{{ item.key }}' authentication method"
+      assert:
+        that:
+          - item.value.sasl is defined
+          - item.value.sasl.gssapi is defined or item.value.sasl.oauthbearer is defined
+        msg: "'JAAS login module' must be configured"
+        quiet: true
+      when:
+         - item.value.authentication is defined
+         - item.value.authentication.type is defined
+         - item.value.authentication.type in ['oauthbearer','gssapi']
+      with_items:
+        - "{{ __kafka_config.listeners | dict2items }}"
+      
+      
+      
+
+     
+
+
+
+
+    
+
+
