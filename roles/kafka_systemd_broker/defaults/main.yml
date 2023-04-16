@@ -34,12 +34,15 @@ kafka_advertised_host: "{{ ansible_facts[kafka_advertised_interface_name].ipv4.a
 kafka_listeners:
   - name: PLAINTEXT
     port: 9092
-    protocol: PLAINTEXT
+    tls: false
 
 kafka_inter_broker_listener_name: PLAINTEXT
 kafka_admin_listener_name: PLAINTEXT
 
 kafka_jmx_enabled: false
 kafka_jmx_management_port: 9990
+
+kafka_admin:
+  listener_name: PLAINTEXT
 
 kafka_additional_conf: {}

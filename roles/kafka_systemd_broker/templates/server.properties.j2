@@ -13,35 +13,36 @@ log.dirs={{ kafka_log_dirs | join(',') }}
 zookeeper.connect={{ kafka_zookeeper_connect_servers | join(',') }}
 # TODO allow to configure zookeeper
 
-
 {% for l_name, l_config in __kafka_config.listeners.items() %}
+
 {% if l_config.tls %}
 # ---- {{ l_name }} -----
-listener.name.{{ l_name }}.ssl.truststore.location={{ l_config.truststore_location }}
-listener.name.{{ l_name }}.ssl.truststore.type={{ l_config.truststore_type }}
-listener.name.{{ l_name }}.ssl.keystore.location={{ l_config.keystore_location }}
-listener.name.{{ l_name }}.ssl.keystore.password={{ l_config.keystore_password }}
-listener.name.{{ l_name }}.ssl.keystore.type={{ l_config.keystore_type }}
-{% if 'sasl' in l_config %}
-listener.name.{{ l_name }}.sasl.enabled.mechanisms={{ l_config.sasl.keys() | map('upper') | join(',') }}
-{% for sasl_mechanism, sasl_config in l_config.sasl.items() %}
-listener.name.{{ l_name }}.{{ sasl_mechanism }}.sasl.jaas.config={{ sasl_config }}
-{% endfor %}
-{% endif %}
+listener.name.{{ l_name | lower }}.ssl.truststore.location={{ l_config.truststore_location }}
+listener.name.{{ l_name | lower }}.ssl.truststore.type={{ l_config.truststore_type }}
+listener.name.{{ l_name | lower }}.ssl.keystore.location={{ l_config.keystore_location }}
+listener.name.{{ l_name | lower }}.ssl.keystore.password={{ l_config.keystore_password }}
+listener.name.{{ l_name | lower }}.ssl.keystore.type={{ l_config.keystore_type }}
 {% if 'ssl_client_auth' in l_config %}
-listener.name.{{ l_name }}.ssl.client.auth={{ l_config.ssl_client_auth }}
+listener.name.{{ l_name | lower }}.ssl.client.auth={{ l_config.ssl_client_auth }}
 {% endif %}
+{% endif %}
+{% if 'sasl' in l_config %}
+listener.name.{{ l_name | lower }}.sasl.enabled.mechanisms={{ l_config.sasl.keys() | map('upper') | join(',') }}
+{% for sasl_mechanism, sasl_config in l_config.sasl.items() %}
+listener.name.{{ l_name | lower }}.{{ sasl_mechanism }}.sasl.jaas.config={{ sasl_config | replace('\\n', '\n') }}
+{% if sasl_mechanism in ['gssapi'] %}
+
+sasl.kerberos.service.name=kafka
 {% endif %}
 {% endfor %}
-
-
+{% endif %}
+{% endfor %}
 
 {% if __kafka_config.authorization %}
 allow.everyone.if.no.acl.found = {{ __kafka_config.authorization['allow.everyone.if.no.acl.found'] }}
 authorizer.class.name = {{ __kafka_config.authorization['authorizer.class.name'] }}
 super.users = {{ __kafka_config.authorization['super.users'] | join(';') }}
 {% endif %}
-
 
 {% for kafka_conf_key, kafka_conf_value in __kafka_config.additional_config.items() %}
 {{ kafka_conf_key }}={{ kafka_conf_value }}
