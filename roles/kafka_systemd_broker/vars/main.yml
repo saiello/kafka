@@ -4,8 +4,8 @@ __kafka_commands_bin: "{{ kafka_home }}/bin"
 
 __kafka_input_config:
   advertised_host: "{{ kafka_advertised_host }}"
-  tls: "{{ kafka_tls_config }}"
-  authorization: "{{ kafka_authorization }}"
+  tls: "{{ kafka_tls_config | default({}) }}"
+  authorization: "{{ kafka_authorization | default({}) }}"
   listeners: "{{ kafka_listeners }}"
   additional_config: "{{ kafka_additional_conf }}"
   admin: "{{ kafka_admin }}"
