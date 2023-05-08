@@ -50,8 +50,8 @@
                 config:
                   useKeyTab: true
                   storeKey: true
-                  keyTab: "/opt/kafka/krb5/zookeeper-node1.keytab"
-                  principal: "zookeeper/node1.example.redhat.com@EXAMPLE.REDHAT.COM"
+                  keyTab: "/opt/kafka/krb5/kafka-node1.keytab"
+                  principal: "kafka/node1.example.redhat.com@EXAMPLE.REDHAT.COM"
    
           admin:
             listener_name: plain
@@ -60,14 +60,12 @@
 
           additional_config: {}
 
-    #- debug: var=__kafka_config
-
-    - name: "Test '{{ item.key }}' authentication method"
+    - name: "Test authentication methods"
       assert:
         that:
           - item.value.sasl is defined
           - item.value.sasl.gssapi is defined or item.value.sasl.oauthbearer is defined
-        msg: "'JAAS login module' must be configured"
+        msg: "'JAAS login module' must be defined"
         quiet: true
       when:
          - item.value.authentication is defined
@@ -76,7 +74,45 @@
       with_items:
         - "{{ __kafka_config.listeners | dict2items }}"
       
-      
+    - name: "Test GSSAPI JAAS configurations"
+      assert:
+        that:
+          - item.value.sasl is defined
+          - item.value.sasl.gssapi is defined
+          - "'com.sun.security.auth.module.Krb5LoginModule' in item.value.sasl.gssapi"
+          - "'useKeyTab' in item.value.sasl.gssapi"
+          - "'storeKey' in item.value.sasl.gssapi"
+          - "'keyTab' in item.value.sasl.gssapi"
+          - "'principal' in item.value.sasl.gssapi"
+        msg: "'JAAS login module' must be configured"
+        quiet: true
+      when:
+         - item.value.authentication is defined
+         - item.value.authentication.type is defined
+         - "'gssapi' in item.value.authentication.type"
+      with_items:
+        - "{{ __kafka_config.listeners | dict2items }}"
+
+    - name: "Test OAUTHBEARER JAAS configurations"
+      assert:
+        that:
+          - item.value.sasl is defined
+          - item.value.sasl.oauthbearer is defined
+          - "'org.apache.kafka.common.security.oauthbearer.OAuthBearerLoginModule' in item.value.sasl.oauthbearer"
+          - "'oauth.valid.issuer.uri' in item.value.sasl.oauthbearer"
+          - "'oauth.jwks.endpoint.uri' in item.value.sasl.oauthbearer"
+          - "'oauth.username.claim' in item.value.sasl.oauthbearer"
+          - "'oauth.client.id' in item.value.sasl.oauthbearer"
+          - "'oauth.client.secret' in item.value.sasl.oauthbearer"
+          - "'oauth.token.endpoint.uri' in item.value.sasl.oauthbearer"
+        msg: "'JAAS login module' must be configured"
+        quiet: true
+      when:
+         - item.value.authentication is defined
+         - item.value.authentication.type is defined
+         - "'oauthbearer' in item.value.authentication.type"
+      with_items:
+        - "{{ __kafka_config.listeners | dict2items }}"
       
 
      

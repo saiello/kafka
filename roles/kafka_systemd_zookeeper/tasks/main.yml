@@ -44,7 +44,7 @@
 # ---------------------------
 - name: Initialize zookeeper_java_opts
   ansible.builtin.set_fact:
-    zookeeper_java_opts: []
+    zookeeper_java_opts: "{{ zookeeper_java_opts | default([]) }}"
 
 # ---------------------------
 # Prepare Configuration files
@@ -58,6 +58,13 @@
     mode: 0775
   become: true
 
+# ---------------------------
+# Prepare Sercurity resources
+# ---------------------------
+- name: Setup security resources
+  ansible.builtin.include_tasks: setup_security.yml
+  when: zookeeper_auth_quorum_enabled
+  
 - name: Set Zookeeper Servers Facts
   include_tasks: set_zk_facts.yml
 

@@ -1,6 +1,6 @@
 ---
 - name: Verify Zookeeper is listening
   ansible.builtin.wait_for:
-    host: localhost
+    host: "{{ zookeeper_client_address }}"
     port: "{{ zookeeper_client_port }}"
     timeout: 60

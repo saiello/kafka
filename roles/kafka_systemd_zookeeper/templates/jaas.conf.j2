@@ -1,0 +1,37 @@
+Client {
+    com.sun.security.auth.module.Krb5LoginModule required 
+    debug={{ zookeeper_jaas_debug }}
+    useKeyTab=true
+    storeKey=true
+    useTicketCache=false
+    keyTab="{{ zookeeper_kerberos_keytab_location }}"
+    principal="{{ zookeeper_kerberos_principal }}";
+};
+
+Server {
+    com.sun.security.auth.module.Krb5LoginModule required 
+    debug={{ zookeeper_jaas_debug }}
+    useKeyTab=true
+    storeKey=true
+    useTicketCache=false
+    keyTab="{{ zookeeper_kerberos_keytab_location }}"
+    principal="{{ zookeeper_kerberos_principal }}";
+};
+
+QuorumServer {
+    com.sun.security.auth.module.Krb5LoginModule required 
+    debug={{ zookeeper_jaas_debug }}
+    useKeyTab=true
+    storeKey=true
+    keyTab="{{ zookeeper_kerberos_keytab_location }}"
+    principal="{{ zookeeper_kerberos_principal }}";
+};
+
+QuorumLearner {
+    com.sun.security.auth.module.Krb5LoginModule required 
+    debug={{ zookeeper_jaas_debug }}
+    useKeyTab=true
+    storeKey=true
+    keyTab="{{ zookeeper_kerberos_keytab_location }}"
+    principal="{{ zookeeper_kerberos_principal }}";
+};

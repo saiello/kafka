@@ -1,0 +1,8 @@
+Client {
+    com.sun.security.auth.module.Krb5LoginModule required 
+    debug={{ kafka_jaas_debug }}
+    useKeyTab=true
+    storeKey=true
+    keyTab="{{ kafka_kerberos_keytab_location }}"
+    principal="kafka/{{ inventory_hostname }}@EXAMPLE.REDHAT.COM";
+};

@@ -2,5 +2,5 @@
 JAVA_HOME={{ zookeeper_java_home }}
 {% endif -%}
 LOG_DIR={{ zookeeper_logs_dir }}
-KAFKA_OPTS={{ zookeeper_java_opts | join(' ') }}
+KAFKA_OPTS={{ zookeeper_java_opts | join(' ') }}
 KAFKA_HEAP_OPTS=-Xmx{{ zookeeper_max_heap }} -Xms{{ zookeeper_min_heap }}

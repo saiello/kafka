@@ -22,7 +22,6 @@
       Allowed values are: {{ __kafka_config.listeners.values() }}
     quiet: true
 
-
-- name: Initialize kafka_opts
+- name: Initialize kafka_java_opts
   ansible.builtin.set_fact:
-    kafka_java_opts: []
+    kafka_java_opts: "{{ kafka_java_opts | default([]) }}"

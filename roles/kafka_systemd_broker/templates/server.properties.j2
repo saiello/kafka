@@ -1,4 +1,4 @@
-{{ ansible_managed }}
+# {{ ansible_managed }}
 
 broker.id={{ kafka_broker_id }}
 
@@ -26,16 +26,20 @@ listener.name.{{ l_name | lower }}.ssl.keystore.type={{ l_config.keystore_type }
 listener.name.{{ l_name | lower }}.ssl.client.auth={{ l_config.ssl_client_auth }}
 {% endif %}
 {% endif %}
+
 {% if 'sasl' in l_config %}
 listener.name.{{ l_name | lower }}.sasl.enabled.mechanisms={{ l_config.sasl.keys() | map('upper') | join(',') }}
+{% if 'gssapi' in l_config.authentication.type %}
+listener.name.{{ l_name | lower }}.sasl.kerberos.service.name=kafka
+{% endif %}
 {% for sasl_mechanism, sasl_config in l_config.sasl.items() %}
 listener.name.{{ l_name | lower }}.{{ sasl_mechanism }}.sasl.jaas.config={{ sasl_config | replace('\\n', '\n') }}
-{% if sasl_mechanism in ['gssapi'] %}
-
-sasl.kerberos.service.name=kafka
-{% endif %}
 {% endfor %}
+{% if l_name in kafka_inter_broker_listener_name %}
+sasl.mechanism.inter.broker.protocol={{ l_config.authentication.type | upper }}
 {% endif %}
+{% endif %}
+
 {% endfor %}
 
 {% if __kafka_config.authorization %}
@@ -47,3 +51,4 @@ super.users = {{ __kafka_config.authorization['super.users'] | join(';') }}
 {% for kafka_conf_key, kafka_conf_value in __kafka_config.additional_config.items() %}
 {{ kafka_conf_key }}={{ kafka_conf_value }}
 {% endfor %}
+
