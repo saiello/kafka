@@ -45,4 +45,13 @@ kafka_jmx_management_port: 9990
 kafka_admin:
   listener_name: PLAINTEXT
 
+# Security
+kafka_jaas_config_file_location: "{{ kafka_home }}/config/kafka-jaas.conf"
+
+# GSSAPI
+kafka_kerberos_keytab_file: files/{{ inventory_name }}/keytabs/{{ ansible_hostname }}/kafka.keytab
+kafka_kerberos_keytab_location: "{{ kafka_home }}/security/ansible_kafka.keytab"
+
 kafka_additional_conf: {}
+
+kafka_jaas_debug: false

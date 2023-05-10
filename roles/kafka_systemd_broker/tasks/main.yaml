@@ -51,6 +51,10 @@
 - name: Debug Kafka zookeeper.connect.servers
   ansible.builtin.debug: var=kafka_zookeeper_connect_servers
 
+- name: Setup security resources
+  ansible.builtin.include_tasks: setup_security.yml
+  with_items: "{{ __kafka_config.listeners | dict2items }}"
+
 - name: Create systemd unit file
   ansible.builtin.template:
     src: kafka.service.j2
@@ -93,7 +97,6 @@
     enabled: true
   when: not ansible_check_mode
   become: true
-
 
 - name: Run Handlers
   ansible.builtin.meta: flush_handlers

@@ -1,4 +1,4 @@
-{{ ansible_managed }}
+# {{ ansible_managed }}
 
 dataDir={{ zookeeper_data_path }}
 clientPort={{ zookeeper_client_port }}
@@ -9,8 +9,8 @@ syncLimit=5
 maxClientCnxns=60
 autopurge.snapRetainCount=3
 autopurge.purgeInterval=24
-snapshot.trust.empty=false
-4lw.commands.whitelist=*
+snapshot.trust.empty={{ zookeeper_conf_snapshot_trust_empty | ternary('true', 'false') }}
+4lw.commands.whitelist={{ zookeeper_conf_4wl_commands_whitelist | join(',') }}
 
 {% if zookeeper_servers is defined %}
 {% for zookeeper_server in zookeeper_servers %}
@@ -18,3 +18,30 @@ server.{{ zookeeper_server.myid }}={{ zookeeper_server.address }}:{{ zookeeper_s
 {% endfor %}
 {% endif %}
 
+{% if zookeeper_auth_quorum_enabled %}
+# Server-to-Server authentication
+quorum.auth.enableSasl={{ zookeeper_conf_quorum_enable_sasl | ternary('true', 'false') }}
+quorum.auth.learnerRequireSasl={{ zookeeper_conf_quorum_learner_require_sasl | ternary('true', 'false') }}
+quorum.auth.serverRequireSasl={{ zookeeper_conf_quorum_server_require_sasl | ternary('true', 'false') }}
+quorum.auth.learner.loginContext=QuorumLearner
+quorum.auth.server.loginContext=QuorumServer
+quorum.cnxn.threads.size=20
+
+{% if 'gssapi' in zookeeper_auth_type %}
+# Can be adjusted to suit ticket renewal intervals. Default is one hour.
+jaasLoginRenew=3600000
+kerberos.removeHostFromPrincipal=false
+kerberos.removeRealmFromPrincipal=false
+quorum.auth.kerberos.servicePrincipal=zookeeper/_HOST
+{% endif %}
+
+{% endif %}
+
+{%- if zookeeper_auth_client_enabled %}
+# Client-to-Server authentication
+# You must add the authProvider.<ID> property for every server that is part of the ZooKeeper cluster.
+requireClientAuthScheme=sasl
+{% for zookeeper_server in zookeeper_servers %}
+authProvider.{{ zookeeper_server.myid }}=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
+{% endfor %}
+{% endif %}

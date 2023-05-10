@@ -1,0 +1,48 @@
+---
+- name: Add kafka_java_opts
+  ansible.builtin.set_fact:
+    kafka_java_opts: "{{ kafka_java_opts + [
+        '-Djava.security.auth.login.config=' + kafka_jaas_config_file_location
+      ] }}"
+  when: zookeeper_auth_type is defined
+
+- name: Create security dir for Kafka
+  ansible.builtin.file:
+    path: "{{ kafka_home }}/security"
+    state: directory
+    owner: "{{ kafka_user }}"
+    group: "{{ kafka_group }}"
+    mode: 0755
+  become: true
+
+- name: Copy jaas config file
+  template:
+    src: "templates/jaas.conf.j2"
+    dest: "{{ kafka_jaas_config_file_location }}"
+  when: zookeeper_auth_type is defined
+  become: true
+
+- name: Copy SSL resources
+  block:
+    - name: Copy java truststore file
+      copy:
+        src: "{{ kafka_ssl_truststore_file }}"
+        dest: "{{ kafka_ssl_truststore_location }}"
+
+    - name: Copy java keystore file
+      copy:
+        src: "{{ kafka_ssl_keystore_file }}"
+        dest: "{{ kafka_ssl_keystore_location }}"
+  when:
+    - item.value.tls is defined
+    - item.value.tls
+  become: true
+
+- name: Copy kerberos keytab file
+  copy:
+      src: "{{ kafka_kerberos_keytab_file }}"
+      dest: "{{ kafka_kerberos_keytab_location }}"
+  when:
+    - item.value.authentication.type is defined
+    - item.value.authentication.type in 'gssapi'
+  become: true

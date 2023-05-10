@@ -13,8 +13,24 @@ zookeeper_max_heap: 512M
 zookeeper_min_heap: 512M
 
 zookeeper_interface_name: eth1
-# zookeeper_address_fact: ansible_default_ipv4
+
 zookeeper_port_offset: 0
 zookeeper_client_port: "{{ 2181 + (zookeeper_port_offset | int) }}"
+zookeeper_client_address: "{{ ansible_default_ipv4.address | default(ansible_all_ipv4_addresses[0]) }}"
 
 zookeeper_servers_ansible_group: zookeeper
+
+zookeeper_conf_snapshot_trust_empty: false
+zookeeper_conf_4wl_commands_whitelist: '*'
+
+zookeeper_auth_quorum_enabled: false
+zookeeper_auth_client_enabled: false
+
+# Security
+zookeeper_jaas_config_file_location: "{{ kafka_home }}/config/zookeeper-jaas.conf"
+
+# GSSAPI
+zookeeper_kerberos_keytab_file: files/{{ inventory_name }}/keytabs/{{ ansible_hostname }}/zookeeper.keytab
+zookeeper_kerberos_keytab_location: "{{ kafka_home }}/security/ansible_zookeeper.keytab"
+
+zookeeper_jaas_debug: false
