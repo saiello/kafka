@@ -6,11 +6,15 @@
       - kafka_broker_id is defined
     quiet: true
 
-- saiello.kafka.kafka_config:
+- name: Build kafka config
+  saiello.kafka.kafka_config:
     config: "{{ __kafka_input_config }}"
 
-- debug: var=__kafka_config
-- debug: var=__admin_config
+- name: Debug kafka config
+  ansible.builtin.debug: var={item}
+  with_items:
+    - __kafka_config
+    - __admin_config
 
 - name: Check kafka_inter_broker_listener_name is valid
   ansible.builtin.assert:
