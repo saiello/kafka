@@ -86,12 +86,8 @@ argument_config_spec = dict(
       listener_name=dict(
         type='str'
       ),
-      authentication=dict(
-        type='dict',
-        options=dict(
-          tls=tls_config_spec
-        )
-      )
+      tls=tls_config_spec,
+      authentication=authentication_spec
     )
   )
 )
@@ -261,12 +257,32 @@ class KafkaConfigGenerator():
       options['ssl.keystore.type']=tls['keystore']['type']
       options['ssl.keystore.password']=tls['keystore']['password']
 
-    plain = admin.pop('plain', None)
-    if plain is not None:
-      options['sasl.jaas.config']='org.apache.kafka.common.security.plain.PlainLoginModule required username="{}" password="{}";'.format(
-        plain.pop('username'), plain.pop('password')
-      )
+    authentication_type = authentication.pop('type', '-')
+    authentication_config = authentication.pop('config', {})
 
+    
+
+    if authentication_type == 'plain':
+      jaas_login_module_args = ' '.join(['{}="{}"'.rjust(9, ' ')
+        .format(k, v) for k, v in authentication_config.items()])
+      options['sasl.jaas.config']='org.apache.kafka.common.security.plain.PlainLoginModule required {};'.format(jaas_login_module_args)
+
+    if authentication_type == 'gssapi':
+
+      options['sasl.mechanism'] = 'GSSAPI'
+      options['sasl.kerberos.service.name'] = authentication_config.pop('service_name', 'kafka')
+
+      jaas_login_module_args = ' '.join(['{}="{}"'.rjust(9, ' ')
+        .format(k, v) for k, v in authentication_config.items()])
+
+      options['sasl.jaas.config']='com.sun.security.auth.module.Krb5LoginModule required {};'.format(jaas_login_module_args)
+
+    if authentication_type in ['scram-sha-256', 'scram-sha-512']:
+      options['sasl.mechanism'] = authentication_type.upper()
+      jaas_login_module_args = ' '.join(['{}="{}"'.rjust(9, ' ')
+        .format(k, v) for k, v in authentication_config.items()])
+      options['sasl.jaas.config']='org.apache.kafka.common.security.scram.ScramLoginModule required {};'.format(jaas_login_module_args)
+    
     # TODO check options according to protocol 
 
     return {

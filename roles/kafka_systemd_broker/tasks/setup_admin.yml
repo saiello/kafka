@@ -7,6 +7,7 @@
     group: "{{ kafka_group }}"
     mode: 0400
   when: 
-    - __kafka_admin.require_command_config is defined
-    - __kafka_admin.require_command_config
+    - __admin_config.require_command_config is defined
+    - __admin_config.require_command_config
+  become: true
     
