@@ -15,6 +15,12 @@ amqstreams_dirname: "kafka_{{ amqstreams_scala_version }}-{{ amqstreams_versions
 
 # upstream catalogue
 kafka_versions:
+  3.5.0:
+    scala_version: 2.13
+    microversion: 3.5.0
+  3.4.0:
+    scala_version: 2.13
+    microversion: 3.4.0 (Commit:2e1947d240607d53)
   3.3.1:
     scala_version: 2.13
     microversion: 3.3.1 (Commit:e23c59d00e687ff5)
@@ -33,6 +39,14 @@ kafka_versions:
 
 # amqstreams catalogue
 amqstreams_versions:
+  2.5.0:
+    scala_version: 2.13
+    microversion: 3.5.0.redhat-00010
+    rhn_id: 105693
+  2.4.0:
+    scala_version: 2.13
+    microversion: 3.4.0.redhat-00006 (Commit:75703a7c3d32b831)
+    rhn_id: 105393
   2.3.0:
     scala_version: 2.13
     microversion: 3.3.1.redhat-00008 (Commit:da60911214b98021)
