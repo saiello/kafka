@@ -55,6 +55,7 @@
       group: "{{ kafka_group }}"
       mode: 0400
   when:
+    - not kafka_kerberos_keytab_skip_copy
     - item.value.authentication.type is defined
     - item.value.authentication.type in 'gssapi'
   become: true

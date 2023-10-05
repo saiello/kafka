@@ -24,6 +24,7 @@
     group: "{{ zookeeper_group }}"
     mode: 0400
   when:
+    - not zookeeper_kerberos_keytab_skip_copy
     - zookeeper_auth_type is defined 
     - zookeeper_auth_type in 'gssapi'
   become: true
