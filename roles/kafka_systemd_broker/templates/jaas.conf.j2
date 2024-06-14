@@ -4,5 +4,5 @@ Client {
     useKeyTab=true
     storeKey=true
     keyTab="{{ kafka_kerberos_keytab_location }}"
-    principal="kafka/{{ inventory_hostname }}@EXAMPLE.REDHAT.COM";
+    principal="{{ kafka_kerberos_principal }}";
 };
