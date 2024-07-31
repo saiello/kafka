@@ -4,7 +4,21 @@
     zookeeper_java_opts: "{{ zookeeper_java_opts + [
         '-Djava.security.auth.login.config=' + zookeeper_jaas_config_file_location
       ] }}"
-  when: zookeeper_auth_type is defined
+  when: 
+    - zookeeper_auth_type is defined
+    - zookeeper_auth_type == 'gssapi'
+
+- name: Set SSL facts
+  ansible.builtin.set_fact:
+    zookeeper_ssl_truststore_file: "{{ zookeeper_tls_config.trustedCA.file }}"
+    zookeeper_ssl_truststore_location: "{{ zookeeper_tls_config.trustedCA.location }}"
+    zookeeper_ssl_keystore_file: "{{ zookeeper_tls_config.keystore.file }}"
+    zookeeper_ssl_keystore_location: "{{ zookeeper_tls_config.keystore.location }}"
+    zookeeper_ssl_keystore_password: "{{ zookeeper_tls_config.keystore.password }}"
+    zookeeper_ssl_keystore_type: "{{ zookeeper_tls_config.keystore.type }}"
+  when: 
+  - zookeeper_tls_config is defined
+  - zookeeper_tls_config.enabled
 
 - name: Create security dir for Kafka
   ansible.builtin.file:
@@ -25,7 +39,27 @@
     mode: 0400
   when:
     - zookeeper_auth_type is defined 
-    - zookeeper_auth_type in 'gssapi'
+    - zookeeper_auth_type == 'gssapi'
+  become: true
+
+- name: Copy SSL resources
+  block:
+    - name: Copy truststore file
+      copy:
+        src: "{{ zookeeper_ssl_truststore_file }}"
+        dest: "{{ zookeeper_ssl_truststore_location }}"
+        owner: "{{ zookeeper_user }}"
+        group: "{{ zookeeper_group }}"
+
+    - name: Copy keystore file
+      copy:
+        src: "{{ zookeeper_ssl_keystore_file }}"
+        dest: "{{ zookeeper_ssl_keystore_location }}"
+        owner: "{{ zookeeper_user }}"
+        group: "{{ zookeeper_group }}"
+  when:
+    - zookeeper_auth_type is defined 
+    - zookeeper_auth_type == 'tls'
   become: true
 
 - name: Copy jaas config file
@@ -37,5 +71,5 @@
     mode: 0400
   when:
     - zookeeper_auth_type is defined 
-    - zookeeper_auth_type in 'gssapi'
+    - zookeeper_auth_type == 'gssapi'
   become: true
