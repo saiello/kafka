@@ -1,0 +1,113 @@
+---
+# skip prerun because I am experiencing the issue described here:
+# https://github.com/ansible/ansible-lint/issues/2070
+prerun: false
+dependency:
+  name: galaxy
+driver:
+  name: docker
+lint: |
+  ansible-lint -v
+platforms:
+
+  - name: machine1
+    image: registry.access.redhat.com/ubi8/ubi-init:latest
+    pre_build_image: true
+    privileged: true
+    command: "/usr/sbin/init"
+    groups:
+      - kafka
+      - zookeeper
+    networks:
+      - name: molecule
+
+  - name: machine2
+    image: registry.access.redhat.com/ubi8/ubi-init:latest
+    pre_build_image: true
+    privileged: true
+    command: "/usr/sbin/init"
+    groups:
+      - kafka
+      - zookeeper
+    networks:
+      - name: molecule
+
+  - name: machine3
+    image: registry.access.redhat.com/ubi8/ubi-init:latest
+    pre_build_image: true
+    privileged: true
+    command: "/usr/sbin/init"
+    groups:
+      - kafka
+      - zookeeper
+    networks:
+      - name: molecule
+
+provisioner:
+  name: ansible
+  ansible_args:
+    - --diff
+  playbooks:
+    converge: converge.yml
+    prepare: ../shared/prepare.yml
+    verify: verify.yml
+  inventory:
+    group_vars:
+      zookeeper:
+        zookeeper_interface_name: eth0
+
+        zookeeper_auth_client_enabled: true
+        zookeeper_auth_quorum_enabled: true
+        zookeeper_auth_type: tls
+
+        zookeeper_tls_config:
+          enabled: true
+          trustedCA:
+            file: ../../../molecule/shared/certs/ca-root.pem
+            location: /etc/certs/ca-root.pem
+          keystore:
+            file: ../../../molecule/shared/certs/cert-cluster.p12
+            location: /etc/certs/cert-cluster.p12
+            password: changeit
+            type: PKCS12
+
+      kafka:
+        kafka_advertised_interface_name: eth0
+        kafka_advertised_host: "{{ ansible_hostname }}"
+        
+        kafka_tls_config:
+          enabled: true
+          trustedCA:
+            file: ../../../molecule/shared/certs/ca-root.pem
+            location: /etc/certs/ca-root.pem
+          keystore:
+            file: ../../../molecule/shared/certs/cert-cluster.p12
+            location: /etc/certs/cert-cluster.p12
+            password: changeit
+            type: PKCS12
+
+        kafka_listeners:
+
+          - name: plain
+            port: 9092
+            tls: false
+
+        kafka_inter_broker_listener_name: plain
+        
+        kafka_admin:
+          listener_name: plain
+
+    host_vars:
+      machine1:
+        kafka_broker_id: 1
+        zookeeper_myid: 1
+      machine2:
+        kafka_broker_id: 2
+        zookeeper_myid: 2
+      machine3:
+        kafka_broker_id: 3
+        zookeeper_myid: 3
+      localhost:
+        ansible_python_interpreter: "{{ ansible_playbook_python }}"
+verifier:
+  name: ansible
