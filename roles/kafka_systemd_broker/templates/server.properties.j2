@@ -11,11 +11,20 @@ inter.broker.listener.name={{ kafka_inter_broker_listener_name }}
 log.dirs={{ kafka_log_dirs | join(',') }}
 
 zookeeper.connect={{ kafka_zookeeper_connect_servers | join(',') }}
-# TODO allow to configure zookeeper
+{% if zookeeper_auth_client_enabled and zookeeper_auth_type == 'tls' %}
+zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
+zookeeper.ssl.client.enable=true
+zookeeper.ssl.keystore.location={{ kafka_ssl_keystore_location }}
+zookeeper.ssl.keystore.password={{ kafka_ssl_keystore_password }}
+zookeeper.ssl.keystore.type={{ kafka_ssl_keystore_type }}
+zookeeper.ssl.truststore.location={{ kafka_ssl_truststore_location }}
+zookeeper.ssl.truststore.type=PEM
+zookeeper.set.acl=true
+{% endif %}
 
 {% for l_name, l_config in __kafka_config.listeners.items() %}
 
-{% if l_config.tls %}
+{%- if l_config.tls -%}
 # ---- {{ l_name }} -----
 listener.name.{{ l_name | lower }}.ssl.truststore.location={{ l_config.truststore_location }}
 listener.name.{{ l_name | lower }}.ssl.truststore.type={{ l_config.truststore_type }}
@@ -25,7 +34,7 @@ listener.name.{{ l_name | lower }}.ssl.keystore.type={{ l_config.keystore_type }
 {% if 'ssl_client_auth' in l_config %}
 listener.name.{{ l_name | lower }}.ssl.client.auth={{ l_config.ssl_client_auth }}
 {% endif %}
-{% endif %}
+{%- endif -%}
 
 {% if 'sasl' in l_config %}
 listener.name.{{ l_name | lower }}.sasl.enabled.mechanisms={{ l_config.sasl.keys() | map('upper') | join(',') }}
@@ -42,7 +51,7 @@ sasl.mechanism.inter.broker.protocol={{ l_config.authentication.type | upper }}
 
 {% endfor %}
 
-{% if __kafka_config.authorization %}
+{%- if __kafka_config.authorization -%}
 allow.everyone.if.no.acl.found = {{ __kafka_config.authorization['allow.everyone.if.no.acl.found'] }}
 authorizer.class.name = {{ __kafka_config.authorization['authorizer.class.name'] }}
 super.users = {{ __kafka_config.authorization['super.users'] | join(';') }}
@@ -51,4 +60,3 @@ super.users = {{ __kafka_config.authorization['super.users'] | join(';') }}
 {% for kafka_conf_key, kafka_conf_value in __kafka_config.additional_config.items() %}
 {{ kafka_conf_key }}={{ kafka_conf_value }}
 {% endfor %}
-

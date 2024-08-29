@@ -53,20 +53,28 @@ provisioner:
     verify: verify.yml
   inventory:
     group_vars:
-      all:
-        kafka_advertised_interface_name: eth0
+      zookeeper:
         zookeeper_interface_name: eth0
-      
+
+        zookeeper_auth_client_enabled: true
+        zookeeper_auth_quorum_enabled: true
+        zookeeper_auth_type: tls
+
+        zookeeper_tls_config:
+          enabled: true
+          trustedCA:
+            file: ../../../molecule/shared/certs/ca-root.pem
+            location: /etc/certs/ca-root.pem
+          keystore:
+            file: ../../../molecule/shared/certs/cert-cluster.p12
+            location: /etc/certs/cert-cluster.p12
+            password: changeit
+            type: PKCS12
+
       kafka:
+        kafka_advertised_interface_name: eth0
         kafka_advertised_host: "{{ ansible_hostname }}"
-
-        kafka_authorization:
-          type: simple
-          deny_by_default: true
-          super_users:
-            - User:CN=kafka,O=Saiello,L=Rome,C=IT
-            - User:CN=admin,O=Saiello,L=Rome,C=IT
-
+        
         kafka_tls_config:
           enabled: true
           trustedCA:
@@ -80,44 +88,14 @@ provisioner:
 
         kafka_listeners:
 
-          - name: replication
-            port: 9091
-            tls: true 
-            authentication:
-              type: tls
-       
-          - name: admin
+          - name: plain
             port: 9092
-            tls: true
-            authentication:
-              type: tls
+            tls: false
 
-          - name: authenticated
-            port: 9094
-            tls: true 
-            authentication:
-              type: scram-sha-512
-
-        kafka_additional_conf:
-          num.partitions: 1
-          log.retention.hours: 148
-
-        kafka_inter_broker_listener_name: replication
+        kafka_inter_broker_listener_name: plain
         
         kafka_admin:
-          listener_name: admin
-          authentication:
-            type: tls
-          tls:
-            enabled: true
-            trustedCA:
-              file: ../../../molecule/shared/certs/ca-root.pem
-              location: /etc/certs/ca-root.pem
-            keystore:
-              file: ../../../molecule/shared/certs/cert-admin.p12
-              location: /etc/certs/cert-admin.p12
-              password: changeit
-              type: PKCS12
+          listener_name: plain
 
     host_vars:
       machine1:

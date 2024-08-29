@@ -63,7 +63,7 @@
 # ---------------------------
 - name: Setup security resources
   ansible.builtin.include_tasks: setup_security.yml
-  when: zookeeper_auth_quorum_enabled
+  when: zookeeper_auth_type is defined
   
 - name: Set Zookeeper Servers Facts
   include_tasks: set_zk_facts.yml

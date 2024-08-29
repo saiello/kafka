@@ -17,13 +17,18 @@ tls_config_spec = dict(
     keystore=dict(
       type='dict',
       options=dict(
+        file=dict(type='str'),
         location=dict(type='str'),
         password=dict(type='str'),
         type=dict(type='str')
       )
     ),
     trustedCA=dict(
-      type='str'
+      type='dict',
+      options=dict(
+        file=dict(type='str'),
+        location=dict(type='str')
+      )
     )
   )
 )
@@ -110,7 +115,7 @@ class ActionModule(ActionBase):
     ret = dict()
     ret['__kafka_config'] = kafka_config
     ret['__admin_config'] = generator.get_admin_config(kafka_config)
-    
+
 
     return dict(ansible_facts=dict(ret))
 
@@ -152,10 +157,8 @@ class KafkaConfigGenerator():
         listener['protocol'] = 'PLAINTEXT'
 
       if tls:
-        # TODO support different trustore types
         listener['truststore_type'] = 'PEM'
-        listener['truststore_location'] = tls['trustedCA']
-        # listener['truststore_password'] = 
+        listener['truststore_location'] = tls['trustedCA']['location']
         
         listener['keystore_location'] = tls['keystore']['location']
         listener['keystore_password'] = tls['keystore']['password']
@@ -246,10 +249,10 @@ class KafkaConfigGenerator():
     options = {}
     
     authentication = admin.pop('authentication', {})
-    tls = authentication.pop('tls', {})
+    tls = admin.pop('tls', {})
     
     if 'trustedCA' in tls:
-      options['ssl.truststore.location']=tls['trustedCA']
+      options['ssl.truststore.location']=tls['trustedCA']['location']
       options['ssl.truststore.type']='PEM'
    
     if 'keystore' in tls:
@@ -291,7 +294,5 @@ class KafkaConfigGenerator():
       'protocol': protocol,
       'listener': '%s:%s' % (listener['advertised'], listener['port']),
       'require_command_config': bool(options),
-      'options': options 
+      'options': options
     }
-
-

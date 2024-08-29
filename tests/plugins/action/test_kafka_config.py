@@ -17,9 +17,12 @@ authorization:
 
 tls:
   enabled: true
-  trustedCA: defaultCA.pem
+  trustedCA:
+    file: ../../../molecule/shared/certs/ca-root.pem
+    location: /etc/certs/ca-root.pem
   keystore:
-    location: cert.p12
+    file: ../../../molecule/shared/certs/cert-cluster.p12
+    location: /etc/certs/cert-cluster.p12
     password: changeit
     type: PKCS12
 
@@ -48,13 +51,17 @@ additional_config:
 admin:
   listener_name: admin
   authentication:
-    tls:
-      trustedCA: /ect/certs/ca-root.pem
-      keystore:
-        location: /etc/certs/cert-admin.p12
-        password: changeit
-        type: PKCS12    
-
+    type: tls
+  tls:
+    enabled: true
+    trustedCA:
+      file: ../../../molecule/shared/certs/ca-root.pem
+      location: /etc/certs/ca-root.pem
+    keystore:
+      file: ../../../molecule/shared/certs/cert-admin.p12
+      location: /etc/certs/cert-admin.p12
+      password: changeit
+      type: PKCS12
 """)
 
 def test_convert_empty_configuration():
@@ -66,9 +73,9 @@ def test_convert_empty_configuration():
 
 def test_convert_kafka_config(yaml_args):
     actual = KafkaConfigGenerator(yaml_args).get_kafka_config()
-    assert actual['core']['listeners'] == 'REPLICATION://:9091,AUTHENTICATED://:9094,ADMIN://:9095'
-    assert actual['core']['advertised.listeners'] == 'REPLICATION://localhost:9091,AUTHENTICATED://localhost:9094,ADMIN://localhost:9095'
-    assert actual['core']['listener.security.protocol.map'] == 'REPLICATION:SSL,AUTHENTICATED:SASL_SSL,ADMIN:SSL'
+    assert actual['core']['listeners'] == 'replication://:9091,authenticated://:9094,admin://:9095'
+    assert actual['core']['advertised.listeners'] == 'replication://localhost:9091,authenticated://localhost:9094,admin://localhost:9095'
+    assert actual['core']['listener.security.protocol.map'] == 'replication:SSL,authenticated:SASL_SSL,admin:SSL'
     assert actual['authorization']['authorizer.class.name'] == 'kafka.security.authorizer.AclAuthorizer'
     assert actual['listeners']['authenticated']['sasl']['scram-sha-512'] == 'org.apache.kafka.common.security.scram.ScramLoginModule required;'
 
@@ -76,14 +83,11 @@ def test_convert_admin_configuration(yaml_args):
     kafka_config_generator = KafkaConfigGenerator(yaml_args)
     kafka_config = kafka_config_generator.get_kafka_config()
     actual = kafka_config_generator.get_admin_config(kafka_config)
-    print(actual)
     assert actual['listener'] == 'localhost:9095'
-    assert actual['options']['ssl.truststore.location'] == '/ect/certs/ca-root.pem'
+    assert actual['options']['ssl.truststore.location'] == '/etc/certs/ca-root.pem'
     assert actual['options']['ssl.truststore.type'] == 'PEM'
     assert actual['options']['ssl.keystore.location'] == '/etc/certs/cert-admin.p12'
     assert actual['options']['ssl.keystore.type'] == 'PKCS12'
     assert actual['options']['ssl.keystore.password'] == 'changeit'
+    
   
-    
-
-    

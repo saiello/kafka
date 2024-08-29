@@ -2,6 +2,10 @@
 
 dataDir={{ zookeeper_data_path }}
 clientPort={{ zookeeper_client_port }}
+{% if zookeeper_auth_type is defined and 'tls' in zookeeper_auth_type %}
+secureClientPort={{ zookeeper_secure_client_port }}
+serverCnxnFactory=org.apache.zookeeper.server.NettyServerCnxnFactory
+{% endif %}
 
 tickTime=2000
 initLimit=10
@@ -20,13 +24,22 @@ server.{{ zookeeper_server.myid }}={{ zookeeper_server.address }}:{{ zookeeper_s
 
 {% if zookeeper_auth_quorum_enabled %}
 # Server-to-Server authentication
+{% if 'tls' in zookeeper_auth_type %}
+sslQuorum=true
+ssl.quorum.clientAuth=need
+ssl.quorum.keyStore.location={{ zookeeper_ssl_keystore_location }}
+ssl.quorum.keyStore.password={{ zookeeper_ssl_keystore_password }}
+ssl.quorum.keyStore.type=PKCS12
+ssl.quorum.trustStore.location={{ zookeeper_ssl_truststore_location }}
+ssl.quorum.trustStore.type=PEM
+{% elif zookeeper_conf_quorum_enable_sasl %}
 quorum.auth.enableSasl={{ zookeeper_conf_quorum_enable_sasl | ternary('true', 'false') }}
 quorum.auth.learnerRequireSasl={{ zookeeper_conf_quorum_learner_require_sasl | ternary('true', 'false') }}
 quorum.auth.serverRequireSasl={{ zookeeper_conf_quorum_server_require_sasl | ternary('true', 'false') }}
 quorum.auth.learner.loginContext=QuorumLearner
 quorum.auth.server.loginContext=QuorumServer
 quorum.cnxn.threads.size=20
-
+{% endif %}
 {% if 'gssapi' in zookeeper_auth_type %}
 # Can be adjusted to suit ticket renewal intervals. Default is one hour.
 jaasLoginRenew=3600000
@@ -34,14 +47,23 @@ kerberos.removeHostFromPrincipal=false
 kerberos.removeRealmFromPrincipal=false
 quorum.auth.kerberos.servicePrincipal=zookeeper/_HOST
 {% endif %}
-
 {% endif %}
 
-{%- if zookeeper_auth_client_enabled %}
+{% if zookeeper_auth_client_enabled %}
 # Client-to-Server authentication
+{% if 'tls' in zookeeper_auth_type %}
+authProvider.x509=org.apache.zookeeper.server.auth.X509AuthenticationProvider
+ssl.clientAuth=need
+ssl.keyStore.location={{ zookeeper_ssl_keystore_location }}
+ssl.keyStore.password={{ zookeeper_ssl_keystore_password }}
+ssl.keyStore.type=PKCS12
+ssl.trustStore.location={{ zookeeper_ssl_truststore_location }}
+ssl.trustStore.type=PEM
+{% elif zookeeper_conf_quorum_enable_sasl %}
 # You must add the authProvider.<ID> property for every server that is part of the ZooKeeper cluster.
 requireClientAuthScheme=sasl
 {% for zookeeper_server in zookeeper_servers %}
 authProvider.{{ zookeeper_server.myid }}=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
 {% endfor %}
+{% endif %}
 {% endif %}

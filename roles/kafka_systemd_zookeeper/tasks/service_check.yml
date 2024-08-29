@@ -2,5 +2,5 @@
 - name: Verify Zookeeper is listening
   ansible.builtin.wait_for:
     host: "{{ zookeeper_client_address }}"
-    port: "{{ zookeeper_client_port }}"
+    port: "{{ zookeeper_tls_enabled | ternary(zookeeper_secure_client_port, zookeeper_client_port) }}"
     timeout: 60

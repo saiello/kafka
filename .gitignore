@@ -8,3 +8,4 @@ venv
 molecule/shared/certs/*
 !molecule/shared/certs/configs/
 !molecule/shared/certs/Makefile
+.vscode

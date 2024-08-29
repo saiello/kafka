@@ -16,6 +16,7 @@ zookeeper_interface_name: eth1
 
 zookeeper_port_offset: 0
 zookeeper_client_port: "{{ 2181 + (zookeeper_port_offset | int) }}"
+zookeeper_secure_client_port: "{{ 2182 + (zookeeper_port_offset | int) }}"
 zookeeper_client_address: "{{ ansible_default_ipv4.address | default(ansible_all_ipv4_addresses[0]) }}"
 
 zookeeper_servers_ansible_group: zookeeper

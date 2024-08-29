@@ -1,0 +1,47 @@
+---
+- name: Verify
+  hosts: all
+  gather_facts: true
+  vars: 
+    kafka_home: /opt/kafka/kafka_2.13-3.7.0
+  tasks:
+  
+  - name: Ensure ZK CLI config file exist
+    ansible.builtin.copy:
+      content: |
+        zookeeper.ssl.keystore.location=/etc/certs/cert-cluster.p12
+        zookeeper.ssl.keystore.password=changeit
+        zookeeper.ssl.keystore.type=PKCS12
+        zookeeper.ssl.truststore.location=/etc/certs/ca-root.pem
+        zookeeper.ssl.truststore.type=PEM
+        zookeeper.ssl.client.enable=true
+        zookeeper.clientCnxnSocket=org.apache.zookeeper.ClientCnxnSocketNetty
+      dest: /tmp/zk-tls-config.properties
+  
+  - name: Test ZK CLI mTLS connection
+    ansible.builtin.command: >
+      {{ kafka_home }}/bin/zookeeper-shell.sh \
+        {{ ansible_default_ipv4.address }}:2182 \
+        whoami \
+        -zk-tls-config-file /tmp/zk-tls-config.properties
+    changed_when: false
+    register: zk_cli_res
+
+  - name: ZK CLI mTLS connection assertions
+    ansible.builtin.assert:
+      that: 
+        - zk_cli_res.stdout_lines is search('SyncConnected') 
+        - zk_cli_res.stdout_lines is search('x509:\ CN=kafka')
+
+  - name: Test Kafka to ZK mTLS connection
+    ansible.builtin.command: >
+      {{ kafka_home }}/bin/kafka-topics.sh \
+        --bootstrap-server {{ ansible_default_ipv4.address }}:9092 \
+        --describe
+    changed_when: false
+    run_once: true
+    register: kafka_zk_res
+
+  - name: Kafka to ZK mTLS connection assertions
+    ansible.builtin.assert:
+      that: kafka_zk_res.rc == 0
