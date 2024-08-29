@@ -115,7 +115,7 @@ class ActionModule(ActionBase):
     ret = dict()
     ret['__kafka_config'] = kafka_config
     ret['__admin_config'] = generator.get_admin_config(kafka_config)
-    
+
 
     return dict(ansible_facts=dict(ret))
 
@@ -249,7 +249,7 @@ class KafkaConfigGenerator():
     options = {}
     
     authentication = admin.pop('authentication', {})
-    tls = authentication.pop('tls', {})
+    tls = admin.pop('tls', {})
     
     if 'trustedCA' in tls:
       options['ssl.truststore.location']=tls['trustedCA']['location']
@@ -294,5 +294,5 @@ class KafkaConfigGenerator():
       'protocol': protocol,
       'listener': '%s:%s' % (listener['advertised'], listener['port']),
       'require_command_config': bool(options),
-      'options': options 
+      'options': options
     }

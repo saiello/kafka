@@ -32,7 +32,6 @@ platforms:
     networks:
       - name: molecule
 
-
   - name: machine3
     image: registry.access.redhat.com/ubi8/ubi-init:latest
     pre_build_image: true
@@ -55,7 +54,6 @@ provisioner:
   inventory:
     group_vars:
       all:
-        kafka_home: /opt/kafka/kafka_2.13-3.1.1
         kafka_advertised_interface_name: eth0
         zookeeper_interface_name: eth0
       
@@ -71,8 +69,11 @@ provisioner:
 
         kafka_tls_config:
           enabled: true
-          trustedCA: /etc/certs/ca-root.pem
+          trustedCA:
+            file: ../../../molecule/shared/certs/ca-root.pem
+            location: /etc/certs/ca-root.pem
           keystore:
+            file: ../../../molecule/shared/certs/cert-cluster.p12
             location: /etc/certs/cert-cluster.p12
             password: changeit
             type: PKCS12
@@ -106,12 +107,17 @@ provisioner:
         kafka_admin:
           listener_name: admin
           authentication:
-            tls:
-              trustedCA: /etc/certs/ca-root.pem
-              keystore:
-                location: /etc/certs/cert-cluster.p12
-                password: changeit
-                type: PKCS12
+            type: tls
+          tls:
+            enabled: true
+            trustedCA:
+              file: ../../../molecule/shared/certs/ca-root.pem
+              location: /etc/certs/ca-root.pem
+            keystore:
+              file: ../../../molecule/shared/certs/cert-admin.p12
+              location: /etc/certs/cert-admin.p12
+              password: changeit
+              type: PKCS12
 
     host_vars:
       machine1:
