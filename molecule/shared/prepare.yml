@@ -1,6 +1,7 @@
 ---
 - name: Prepare
   hosts: all
+  gather_facts: False
   vars:
     certs_source_base: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') }}/molecule/shared/certs"
   tasks:

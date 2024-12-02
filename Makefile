@@ -31,3 +31,9 @@ print_inventory:
 
 ansible_check:
 	ansible-playbook -i $(SCENARIO_INVENTORY) playbooks/service_check.yml -v
+
+
+test_pytest:
+	PYTHONPATH='.' pytest tests
+
+	

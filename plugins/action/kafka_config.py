@@ -101,18 +101,13 @@ class ActionModule(ActionBase):
 
 
   def run(self, tmp=None, task_vars=None):
-
     config = self._task.args.pop('config', {})
-
     generator = KafkaConfigGenerator(config)
-    kafka_config = generator.get_kafka_config()
-
-    ret = dict()
-    ret['__kafka_config'] = kafka_config
-    ret['__admin_config'] = generator.get_admin_config(kafka_config)
     
-
-    return dict(ansible_facts=dict(ret))
+    return dict(ansible_facts={
+      '__kafka_config': generator.kafka_config,
+      '__admin_config': generator.admin_config
+    })
 
 
 class KafkaConfigGenerator():
@@ -126,6 +121,9 @@ class KafkaConfigGenerator():
     if validation_result.error_messages:
       raise ValueError(validation_result.error_messages)
 
+  
+    self._kafka_config = self._get_kafka_config()
+    self._admin_config = self._get_admin_config(self._kafka_config)
 
 
   def _coalesce_listeners(self, listeners):
@@ -135,6 +133,8 @@ class KafkaConfigGenerator():
     listener_map = dict()
 
     for listener in listeners:
+
+      listener['name'] = listener['name'].upper()
     
       if 'advertised' not in listener:
         listener['advertised'] = advertised_host
@@ -192,7 +192,7 @@ class KafkaConfigGenerator():
         if authentication_type == 'plain':
           pass # TODO 
       
-      listener_map[listener['name']] = listener
+      listener_map[listener['name'].lower()] = listener
 
     return listener_map
 
@@ -211,7 +211,16 @@ class KafkaConfigGenerator():
       'super.users': authorization.pop('super_users') # TODO set a default value if available
     }
 
-  def get_kafka_config(self):
+  @property
+  def kafka_config(self):
+    return self._kafka_config
+
+
+  @property
+  def admin_config(self):
+    return self._admin_config
+
+  def _get_kafka_config(self):
       listeners = self._config.pop('listeners', DEFAULT_LISTENERS)
       listeners = self._coalesce_listeners(listeners)
       
@@ -230,8 +239,9 @@ class KafkaConfigGenerator():
 
       return config
 
-  def get_admin_config(self, kafka_config):
-    admin = self._config.pop('admin')
+  def _get_admin_config(self, kafka_config):
+    admin = self._config.pop('admin', None)
+    
     if admin is None:
       return {}
 
@@ -245,8 +255,9 @@ class KafkaConfigGenerator():
   
     options = {}
     
-    authentication = admin.pop('authentication', {})
-    tls = authentication.pop('tls', {})
+    authentication = listener.pop('authentication', {})
+    
+    tls = admin.pop('tls', {})
     
     if 'trustedCA' in tls:
       options['ssl.truststore.location']=tls['trustedCA']
